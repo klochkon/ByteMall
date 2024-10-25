@@ -1,5 +1,6 @@
 package com.shop.productservice.Service;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.shop.productservice.DTO.MailDTO;
 import com.shop.productservice.DTO.ProductDuplicateDTO;
 import com.shop.productservice.DTO.ProductWithQuantityDTO;
@@ -8,12 +9,14 @@ import com.shop.productservice.Model.Product;
 import com.shop.productservice.Repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +29,10 @@ import java.util.Map;
 public class ProductService {
 
     private final ProductRepository repository;
+    private final AmazonS3 amazonS3;
+
+    @Value("${aws.s3.bucket-name}")
+    private String bucketName;
     private final KafkaTemplate<String, MailDTO> kafkaVerification;
 
     @Cacheable(value = "productWithQuantity")
@@ -79,7 +86,12 @@ public class ProductService {
 //    }
 
     @CachePut(value = {"allProduct", "product"}, key = "#product.id")
-    public Product createProduct(Product product) {
+    public Product createProduct(Product product, List<MultipartFile> photos) {
+
+        for (MultipartFile photo : photos) {
+            amazonS3.putObject()
+        }
+
         Product savedProduct = repository.save(product);
         log.info("Product created successfully: {}", savedProduct);
         return savedProduct;
