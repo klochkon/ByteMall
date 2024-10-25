@@ -85,34 +85,34 @@ public class ProductService {
 //        log.info("Sent mailDTO with lack products: {}", mailDTO);
 //    }
 
-    @CachePut(value = {"allProduct", "product"}, key = "#product.id")
-    public Product createProduct(Product product, List<MultipartFile> photos) {
+//    @CachePut(value = {"allProduct", "product"}, key = "#product.id")
+//    public Product createProduct(Product product, List<MultipartFile> photos) {
+//
+//        for (MultipartFile photo : photos) {
+//            amazonS3.putObject()
+//        }
+//
+//        Product savedProduct = repository.save(product);
+//        log.info("Product created successfully: {}", savedProduct);
+//        return savedProduct;
+//    }
 
-        for (MultipartFile photo : photos) {
-            amazonS3.putObject()
-        }
-
-        Product savedProduct = repository.save(product);
-        log.info("Product created successfully: {}", savedProduct);
-        return savedProduct;
-    }
-
-    public List<ProductDuplicateDTO> nameIdentifier(List<Long> listId) {
-        List<Product> productsList = repository.findAllById(listId);
-        List <ProductDuplicateDTO> dtoList= new ArrayList<>();
-        for (Product product : productsList) {
-            ProductDuplicateDTO duplicate;
-            duplicate = ProductDuplicateDTO.builder()
-                    .id(product.getId())
-                    .category(product.getCategory())
-                    .cost(product.getCost())
-                    .name(product.getName())
-                    .description(product.getDescription())
-                    .feedBack(product.getFeedBack())
-                    .producer(product.getProducer())
-                    .build();
-        }
-    }
+//    public List<ProductDuplicateDTO> nameIdentifier(List<Long> listId) {
+//        List<Product> productsList = repository.findAllById(listId);
+//        List <ProductDuplicateDTO> dtoList= new ArrayList<>();
+//        for (Product product : productsList) {
+//            ProductDuplicateDTO duplicate;
+//            duplicate = ProductDuplicateDTO.builder()
+//                    .id(product.getId())
+//                    .category(product.getCategory())
+//                    .cost(product.getCost())
+//                    .name(product.getName())
+//                    .description(product.getDescription())
+//                    .feedBack(product.getFeedBack())
+//                    .producer(product.getProducer())
+//                    .build();
+//        }
+//    }
 
     @CacheEvict(value = {"product", "allProduct"}, key = "#id")
     public void deleteById(Long id) {
