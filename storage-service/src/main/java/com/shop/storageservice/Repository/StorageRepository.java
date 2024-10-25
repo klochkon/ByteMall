@@ -10,16 +10,9 @@ import org.springframework.stereotype.Repository;
 public interface StorageRepository extends JpaRepository<Storage, Long> {
 
     @Modifying
-    @Query(value = "UPDATE Storage" +
-            "SET quantity = quantity + quantityAdded" +
-            "WHERE id = addedId",
+    @Query(value = "UPDATE Storage " +
+            "SET quantity = quantity + :quantityAdded " +
+            "WHERE id = :addedId",
             nativeQuery = true)
     void addProductById(Long addedId, Integer quantityAdded);
-
-    @Modifying
-    @Query(value = "UPDATE Storage" +
-            "SET quantity = quantity - quantityDeleted" +
-            "WHERE id = deletedId",
-            nativeQuery = true)
-    void deleteProductById(Long deletedId, Integer quantityDeleted);
 }

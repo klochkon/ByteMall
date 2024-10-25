@@ -6,96 +6,112 @@ import com.shop.productservice.Repository.CommentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CommentServiceTest {
+class CommentServiceTest {
 
     @Mock
-    private CommentRepository repository;
+    private CommentRepository commentRepository;
 
-    private Comment comment;
+    @InjectMocks
+    private CommentService commentService;
 
+    private Comment comment1;
+    private Comment comment2;
     private Product product;
-
-    private CommentService service;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        LocalDate dateOfPublishing = LocalDate.of(2024, 8, 1);
-        List<Comment> comments = List.of(comment);
-
         product = Product.builder()
                 .id(1L)
-                .category("category")
-                .cost(new BigDecimal(100.00))
-                .name("name")
-                .producer("producer")
-                .description("description")
-                .feedBack(new BigDecimal(1.1))
-                .comment(comments)
+                .name("Product 1")
                 .build();
 
-        comment = Comment.builder()
-                .product(product)
-                .comment("comment")
-                .authorNickname("authorNickname")
-                .dateOfPublishing(dateOfPublishing)
+        comment1 = Comment.builder()
                 .id(1L)
+                .authorNickname("user1")
+                .dateOfPublishing(LocalDate.now())
+                .comment("Great product")
+                .product(product)
+                .build();
+
+        comment2 = Comment.builder()
+                .id(2L)
+                .authorNickname("user2")
+                .dateOfPublishing(LocalDate.now())
+                .comment("Not bad")
+                .product(product)
                 .build();
     }
 
     @Test
     void findAllByProductId() {
-        List<Comment> comments = List.of(comment);
-        when(repository.findAllByProductId(anyLong())).thenReturn(comments);
-        List<Comment> testComments = service.findAllByProductId(product.getId());
-        assertEquals(comments, testComments);
-        verify(repository, times(1)).findAllByProductId(anyLong());
+        List<Comment> comments = Arrays.asList(comment1, comment2);
 
+        when(commentRepository.findAllByProductId(1L)).thenReturn(comments);
+
+        List<Comment> result = commentService.findAllByProductId(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(comment1, result.get(0));
+        verify(commentRepository, times(1)).findAllByProductId(1L);
     }
 
     @Test
     void addComment() {
-        when(repository.save(any(Comment.class))).thenReturn(comment);
-        Comment testComment = service.addComment(comment);
-        assertEquals(comment, testComment);
-        verify(repository, times(1)).save(any(Comment.class));
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment1);
+
+        Comment result = commentService.addComment(comment1);
+
+        assertEquals(comment1, result);
+        verify(commentRepository, times(1)).save(comment1);
     }
 
     @Test
     void updateComment() {
-        when(repository.save(any(Comment.class))).thenReturn(comment);
-        Comment testComment = service.updateComment(comment);
-        assertEquals(comment, testComment);
-        verify(repository, times(1)).save(any(Comment.class));
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment1);
+
+        Comment result = commentService.updateComment(comment1);
+
+        assertEquals(comment1, result);
+        verify(commentRepository, times(1)).save(comment1);
     }
 
     @Test
     void deleteCommentById() {
-        doNothing().when(repository).deleteById(anyLong());
-        service.deleteCommentById(comment.getId());
-        verify(repository, times(1)).deleteById(anyLong());
+        Long commentId = 1L;
+
+        doNothing().when(commentRepository).deleteById(commentId);
+
+        commentService.deleteCommentById(commentId);
+
+        verify(commentRepository, times(1)).deleteById(commentId);
     }
 
     @Test
     void findAllByAuthorNickname() {
-        List<Comment> comments = List.of(comment);
-        when(repository.findAllByAuthorNickname(anyString())).thenReturn(comments);
-        List<Comment> testComments = service.findAllByAuthorNickname(comment.getAuthorNickname());
-        assertEquals(comments, testComments);
-        verify(repository, times(1)).findAllByAuthorNickname(anyString());
+        List<Comment> comments = Collections.singletonList(comment1);
+
+        when(commentRepository.findAllByAuthorNickname("user1")).thenReturn(comments);
+
+        List<Comment> result = commentService.findAllByAuthorNickname("user1");
+
+        assertEquals(1, result.size());
+        assertEquals(comment1, result.get(0));
+        verify(commentRepository, times(1)).findAllByAuthorNickname("user1");
     }
 }

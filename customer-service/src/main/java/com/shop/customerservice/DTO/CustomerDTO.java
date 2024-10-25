@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class CustomerDTO {
 
     private String email;
-    private String Name;
+    private String name;
 }

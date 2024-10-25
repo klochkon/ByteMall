@@ -1,7 +1,5 @@
 package com.shop.customerservice.Repository;
 
-import com.shop.customerservice.Model.Customer;
-import com.shop.customerservice.Model.Order;
 import com.shop.customerservice.Model.Sale;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;

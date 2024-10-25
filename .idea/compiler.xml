@@ -9,7 +9,6 @@
         <outputRelativeToContentRoot value="true" />
         <module name="customer-service" />
         <module name="purchase-service" />
-        <module name="analytics-service" />
         <module name="product-service" />
         <module name="ByteMall" />
         <module name="storage-service" />
@@ -17,6 +16,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="analytics-service" target="17" />
       <module name="main-service" target="17" />
     </bytecodeTargetLevel>
   </component>

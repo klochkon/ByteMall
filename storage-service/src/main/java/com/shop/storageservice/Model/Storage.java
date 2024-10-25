@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 public class Storage {
 
     @Id
-//    id - id of ProductDuplicateDTO
     private Long productId;
     private Integer quantity;
 }

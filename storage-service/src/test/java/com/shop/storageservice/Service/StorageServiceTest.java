@@ -1,115 +1,196 @@
 package com.shop.storageservice.Service;
 
+
+
+import com.shop.storageservice.Client.CustomerClient;
+import com.shop.storageservice.Client.ProductClient;
+import com.shop.storageservice.DTO.OrderDuplicateDTO;
 import com.shop.storageservice.DTO.ProductDuplicateDTO;
+import com.shop.storageservice.DTO.ProductWithQuantityDTO;
+import com.shop.storageservice.DTO.StorageDuplicateDTO;
 import com.shop.storageservice.Model.Storage;
 import com.shop.storageservice.Repository.StorageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class StorageServiceTest {
 
-    private Storage storage;
-
-    private ProductDuplicateDTO productDuplicateDTO;
-
-    @Spy
-    @InjectMocks
-    private StorageService service;
+    @Mock
+    private KafkaTemplate<String, List<StorageDuplicateDTO>> kafkaProductVerification;
 
     @Mock
     private StorageRepository repository;
 
+    @Mock
+    private CustomerClient customerClient;
+
+    @Mock
+    private ProductClient productClient;
+
+    @InjectMocks
+    private StorageService service;
+
+    private ProductDuplicateDTO productDuplicateDTO;
+
     @BeforeEach
     void setUp() {
-        Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
-        ProductDuplicateDTO productDuplicateDTO;
+        MockitoAnnotations.openMocks(this);
         productDuplicateDTO = ProductDuplicateDTO.builder()
                 .id(1L)
-                .cost(new BigDecimal(100.00))
-                .category("Category")
-                .description("Description")
-                .feedBack(new BigDecimal(4.2))
-                .name("Name")
-                .producer("Producer")
+                .name("Test Product")
+                .description("Test Description")
+                .cost(new BigDecimal("9.99"))
+                .producer("Test Producer")
+                .category("Test Category")
+                .feedBack(new BigDecimal("4.5"))
                 .build();
+    }
 
-        cart.put(productDuplicateDTO, 5);
+    @Test
+    void addProductById() {
+        service.addProductById(productDuplicateDTO, 10);
 
-        storage = Storage.builder()
+        verify(repository, times(1)).addProductById(productDuplicateDTO.getId(), 10);
+        verify(customerClient, times(1)).customerIdentify(any());
+    }
+
+    @Test
+    void saveProduct() {
+        service.saveProduct(100, productDuplicateDTO);
+
+        verify(repository, times(1)).save(any(Storage.class));
+    }
+
+    @Test
+    void updateProduct() {
+        service.updateProduct(200, productDuplicateDTO);
+
+        verify(repository, times(1)).save(any(Storage.class));
+    }
+
+    @Test
+    void findAllStorageWithQuantity() {
+        Storage storage = Storage.builder()
                 .productId(1L)
-                .quantity(1)
+                .quantity(100)
                 .build();
+
+        when(repository.findAll()).thenReturn(Collections.singletonList(storage));
+        when(productClient.getAllProductWithQuantity(anyList())).thenReturn(new ArrayList<>());
+
+        List<ProductWithQuantityDTO> result = service.findAllStorageWithQuantity();
+
+        assertEquals(0, result.size());
+        verify(repository, times(1)).findAll();
+    }
+
+    @Test
+    void deleteById() {
+        service.deleteById(1L);
+
+        verify(repository, times(1)).deleteById(1L);
     }
 
     @Test
     void findById() {
+        Storage storage = Storage.builder()
+                .productId(1L)
+                .quantity(100)
+                .build();
+
         when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
-        Storage testStorage = service.findById(storage.getProductId());
-        assertEquals(storage, testStorage);
-        verify(repository, times(1)).findById(anyLong());
+
+        Storage result = service.findById(1L);
+
+        assertEquals(storage, result);
+        verify(repository, times(1)).findById(1L);
     }
 
     @Test
     void isInStorage() {
+        Storage storage = Storage.builder()
+                .productId(1L)
+                .quantity(100)
+                .build();
+
         when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
-        Boolean testStorage = service.isInStorage(storage.getProductId(), storage.getQuantity());
-        assertEquals(testStorage, true);
-        verify(repository, times(1)).findById(anyLong());
+
+        Boolean result = service.isInStorage(1L, 50);
+
+        assertTrue(result);
+        verify(repository, times(1)).findById(1L);
     }
-
-//    @Test
-//    void addProductById() {
-//        doNothing().when(repository).addProductById(anyLong(), anyInt());
-//        service.addProductById(storage.getProductId(), storage.getQuantity());
-//        verify(repository, times(1)).addProductById(anyLong(), anyInt());
-//
-//    }
-
-//    @Test
-//    void deleteProductById() {
-//        doNothing().when(repository).deleteProductById(anyLong(), anyInt());
-//        service.deleteProductById(storage.getId(), storage.getQuantity());
-//        verify(repository, times(1)).deleteProductById(anyLong(), anyInt());
-//    }
 
     @Test
     void isOrderInStorage() {
-        when(service.isInStorage(anyLong(), anyInt())).thenReturn(true);
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
-        Boolean answer = service.isOrderInStorage(cart);
-        assertEquals(answer, true);
-        verify(service, times(1)).isInStorage(anyLong(), anyInt());
+        cart.put(productDuplicateDTO, 5);
+
+        Storage storage = Storage.builder()
+                .productId(1L)
+                .quantity(10)
+                .build();
+
+        when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
+
+        Boolean result = service.isOrderInStorage(cart);
+
+        assertTrue(result);
     }
 
-//    @Test
-//    void testFindOutOfStorageProduct() {
-//
-//        when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
-//
-//        when(service.isInStorage(anyLong(), anyInt())).thenReturn(false);
-//
-//        Map<ProductDuplicateDTO, Integer> result = service.findOutOfStorageProduct(cart);
-//
-//        Map<String, Integer> expected = new HashMap<>();
-//        expected.put("name", 1);
-//
-//        assertEquals(expected, result);
-//
-//        verify(repository, times(1)).findById(anyLong());
-//    }
+    @Test
+    void findOutOfStorageProduct() {
+        Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
+        cart.put(productDuplicateDTO, 15);
+
+        Map<ProductDuplicateDTO, Integer> result = service.findOutOfStorageProduct(cart, 1L);
+
+        assertTrue(result.containsKey(productDuplicateDTO));
+    }
+
+    @Test
+    void productVerification() {
+        Storage storage = Storage.builder()
+                .productId(1L)
+                .quantity(5)
+                .build();
+
+        when(repository.findAll()).thenReturn(Collections.singletonList(storage));
+
+        service.productVerification();
+
+        verify(kafkaProductVerification, times(1)).send(eq("product-name-identifier-topic"), anyList());
+    }
+
+    @Test
+    void deleteProductById() {
+        OrderDuplicateDTO orderDuplicateDTO = new OrderDuplicateDTO();
+        Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
+        cart.put(productDuplicateDTO, 3);
+        orderDuplicateDTO.setCart(cart);
+
+        Storage storage = Storage.builder()
+                .productId(1L)
+                .quantity(100)
+                .build();
+
+        when(repository.findById(productDuplicateDTO.getId())).thenReturn(Optional.of(storage));
+
+        service.deleteProductById(orderDuplicateDTO);
+
+        verify(repository, times(1)).deleteById(productDuplicateDTO.getId());
+    }
 }

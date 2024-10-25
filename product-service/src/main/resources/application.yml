@@ -38,6 +38,16 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+
+aws:
+  s3:
+    bucket-name: your-bucket-name
+    region: us-east-1
+  credentials:
+    access-key: YOUR_ACCESS_KEY_ID
+    secret-key: YOUR_SECRET_ACCESS_KEY
+
+
 server:
   port: 8083
 

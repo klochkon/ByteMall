@@ -4,6 +4,7 @@ import com.shop.customerservice.DTO.OrderDuplicateDTO;
 import com.shop.customerservice.Model.Order;
 import com.shop.customerservice.Repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -14,44 +15,54 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository repository;
 
     @KafkaListener(topics = "order-topic", groupId = "${spring.kafka.consumer-groups.order-group.group-id}")
     public Order saveOrder(OrderDuplicateDTO orderDuplicateDTO) {
-        Order order;
-
-        order = Order.builder()
+        log.info("Received order for saving: {}", orderDuplicateDTO);
+        Order order = Order.builder()
                 .id(orderDuplicateDTO.getId())
                 .cart(orderDuplicateDTO.getCart())
                 .customerId(orderDuplicateDTO.getCustomerId())
                 .cost(orderDuplicateDTO.getCost())
                 .build();
 
-        return repository.save(order);
+        Order savedOrder = repository.save(order);
+        log.info("Order saved successfully: {}", savedOrder);
+        return savedOrder;
     }
 
-    @CachePut(value = {"order", "allOrders"}, key = "#customer.id")
+    @CachePut(value = {"order", "allOrders"}, key = "#order.id")
     public Order updateOrder(Order order) {
-        return repository.save(order);
+        log.info("Updating order: {}", order);
+        Order updatedOrder = repository.save(order);
+        log.info("Order updated successfully: {}", updatedOrder);
+        return updatedOrder;
     }
 
     @CacheEvict(value = {"order", "allOrders"}, key = "#id")
     public void deleteOrderById(Long id) {
+        log.info("Deleting order with id: {}", id);
         repository.deleteById(id);
+        log.info("Order with id {} deleted successfully", id);
     }
 
     @Cacheable(value = "order", key = "#id")
     public Order findOrderById(Long id) {
-        return repository.findById(id).orElse(null);
+        log.info("Finding order by id: {}", id);
+        Order order = repository.findById(id).orElse(null);
+        log.info("Order found: {}", order);
+        return order;
     }
 
     @Cacheable(value = "allOrders")
     public List<Order> findAllByCustomerId(Long customerId) {
-        return repository.findAllByCustomerId(customerId);
+        log.info("Finding all orders for customer id: {}", customerId);
+        List<Order> orders = repository.findAllByCustomerId(customerId);
+        log.info("Total orders found for customer id {}: {}", customerId, orders.size());
+        return orders;
     }
 }
-
-
-
