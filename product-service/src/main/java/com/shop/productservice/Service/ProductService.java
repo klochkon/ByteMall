@@ -13,15 +13,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -30,6 +31,7 @@ public class ProductService {
 
     private final ProductRepository repository;
     private final AmazonS3 amazonS3;
+
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -85,37 +87,48 @@ public class ProductService {
 //        log.info("Sent mailDTO with lack products: {}", mailDTO);
 //    }
 
-//    @CachePut(value = {"allProduct", "product"}, key = "#product.id")
-//    public Product createProduct(Product product, List<MultipartFile> photos) {
-//
-//        for (MultipartFile photo : photos) {
-//            amazonS3.putObject()
-//        }
-//
-//        Product savedProduct = repository.save(product);
-//        log.info("Product created successfully: {}", savedProduct);
-//        return savedProduct;
-//    }
+    @CachePut(value = {"allProduct", "product"}, key = "#product.id")
+    public Product createProduct(Product product, MultipartFile photo) throws IOException {
+        amazonS3.putObject(bucketName, product.getName(), photo.getInputStream(), null);
+        log.info("Product photo with name: {} put in bucket", product.getName());
+        String objectUrl = amazonS3.getUrl(bucketName, product.getName()).toString();
+        product.setImageUrl(objectUrl);
+        Product savedProduct = repository.save(product);
+        log.info("Product created successfully: {}", savedProduct);
+        return savedProduct;
+    }
 
-//    public List<ProductDuplicateDTO> nameIdentifier(List<Long> listId) {
-//        List<Product> productsList = repository.findAllById(listId);
-//        List <ProductDuplicateDTO> dtoList= new ArrayList<>();
-//        for (Product product : productsList) {
-//            ProductDuplicateDTO duplicate;
-//            duplicate = ProductDuplicateDTO.builder()
-//                    .id(product.getId())
-//                    .category(product.getCategory())
-//                    .cost(product.getCost())
-//                    .name(product.getName())
-//                    .description(product.getDescription())
-//                    .feedBack(product.getFeedBack())
-//                    .producer(product.getProducer())
-//                    .build();
-//        }
-//    }
+    public List<ProductDuplicateDTO> nameIdentifier(List<Long> listId) {
+        List<Product> productsList = repository.findAllById(listId);
+        List <ProductDuplicateDTO> dtoList = new ArrayList<>();
+        for (Product product : productsList) {
+            ProductDuplicateDTO duplicate;
+            duplicate = ProductDuplicateDTO.builder()
+                    .id(product.getId())
+                    .category(product.getCategory())
+                    .cost(product.getCost())
+                    .name(product.getName())
+                    .description(product.getDescription())
+                    .feedBack(product.getFeedBack())
+                    .producer(product.getProducer())
+                    .imageUrl(product.getImageUrl())
+                    .slug(product.getSlug())
+                    .build();
+            dtoList.add(duplicate);
+        }
+        Map<Long, ProductDuplicateDTO> entityMap = dtoList.stream()
+                .collect(Collectors.toMap(ProductDuplicateDTO::getId, entity -> entity));
+        return listId.stream()
+                .map(entityMap::get)
+                .toList();
+
+    }
 
     @CacheEvict(value = {"product", "allProduct"}, key = "#id")
     public void deleteById(Long id) {
+        Product product = repository.findById(id).orElse(null);
+        amazonS3.deleteObject(bucketName, product.getName());
+        log.info("Product photo with name: {} deleted from bucket", product.getName());
         repository.deleteById(id);
         log.info("Product with id {} deleted successfully", id);
     }
@@ -135,8 +148,8 @@ public class ProductService {
     }
 
     @CachePut(value = {"product", "allProduct"}, key = "#product.id")
-    public Product updateProduct(Product product) {
-        Product updatedProduct = repository.save(product);
+    public Product updateProduct(Product product, MultipartFile photo) throws IOException {
+        Product updatedProduct = this.createProduct(product, photo);
         log.info("Product updated successfully: {}", updatedProduct);
         return updatedProduct;
     }

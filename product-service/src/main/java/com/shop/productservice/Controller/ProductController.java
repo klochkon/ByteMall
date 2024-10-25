@@ -7,7 +7,10 @@ import com.shop.productservice.Model.Product;
 import com.shop.productservice.Service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.channels.MulticastChannel;
 import java.util.List;
 
 @RestController
@@ -23,15 +26,17 @@ public class ProductController {
     }
 
     @PostMapping("create")
-    public Product createProduct(@RequestBody Product product) {
-        return service.createProduct(product);
+    public Product createProduct(@RequestBody Product product,
+                                 @RequestParam MultipartFile photo) throws IOException {
+        return service.createProduct(product, photo);
     }
 
 
 
     @PutMapping("update")
-    public Product updateProduct(@RequestBody Product product) {
-        return service.updateProduct(product);
+    public Product updateProduct(@RequestBody Product product,
+                                 @RequestParam MultipartFile photo) throws IOException {
+        return service.updateProduct(product, photo);
     }
 
     @DeleteMapping("delete/{id}")

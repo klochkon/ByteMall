@@ -41,12 +41,8 @@ spring:
 
 aws:
   s3:
-    bucket-name: your-bucket-name
-    region: us-east-1
-  credentials:
-    access-key: YOUR_ACCESS_KEY_ID
-    secret-key: YOUR_SECRET_ACCESS_KEY
-
+    bucket-name: bytemallbucket
+    region: eu-north-1
 
 server:
   port: 8083

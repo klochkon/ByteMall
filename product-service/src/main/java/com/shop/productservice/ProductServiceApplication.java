@@ -9,7 +9,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 @SpringBootApplication
 @EnableCaching
 @EnableKafka
-@PropertySource("classpath:AWSSecretKey.yml")
+@PropertySource("classpath:aws-keys.properties")
 public class ProductServiceApplication {
 
     public static void main(String[] args) {

@@ -23,5 +23,7 @@ public class ProductDuplicateDTO {
     private String category;
 
     private BigDecimal feedBack;
+    private String imageUrl;
+    private String slug;
 
 }
