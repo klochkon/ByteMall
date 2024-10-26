@@ -1,6 +1,7 @@
 package com.shop.productservice.Controller;
 
 
+import com.shop.productservice.DTO.ProductDuplicateDTO;
 import com.shop.productservice.DTO.ProductWithQuantityDTO;
 import com.shop.productservice.DTO.StorageDuplicateDTO;
 import com.shop.productservice.Model.Product;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.channels.MulticastChannel;
 import java.util.List;
 
 @RestController
@@ -42,6 +42,11 @@ public class ProductController {
     @DeleteMapping("delete/{id}")
     public void deleteProductById(@PathVariable Long id) {
         service.deleteById(id);
+    }
+
+    @GetMapping("name-identifier")
+    public List<ProductDuplicateDTO> nameIdentifier(@RequestBody List<Long> listId) {
+        return service.nameIdentifier(listId);
     }
 
     @GetMapping("share/{slug}")
