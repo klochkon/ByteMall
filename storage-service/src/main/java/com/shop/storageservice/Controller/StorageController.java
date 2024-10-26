@@ -1,6 +1,6 @@
 package com.shop.storageservice.Controller;
 
-import com.shop.storageservice.DTO.OrderDuplicateDTO;
+import com.shop.storageservice.DTO.OrderWithProductCartDTO;
 import com.shop.storageservice.DTO.ProductDuplicateDTO;
 import com.shop.storageservice.DTO.ProductWithQuantityDTO;
 import com.shop.storageservice.Model.Storage;
@@ -53,7 +53,7 @@ public class StorageController {
     }
 
     @DeleteMapping("delete")
-    public void deleteById(@RequestBody OrderDuplicateDTO orderDuplicateDTO) {
+    public void deleteById(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         service.deleteProductById(orderDuplicateDTO);
     }
 

@@ -4,7 +4,7 @@ package com.shop.storageservice.Service;
 
 import com.shop.storageservice.Client.CustomerClient;
 import com.shop.storageservice.Client.ProductClient;
-import com.shop.storageservice.DTO.OrderDuplicateDTO;
+import com.shop.storageservice.DTO.OrderWithProductCartDTO;
 import com.shop.storageservice.DTO.ProductDuplicateDTO;
 import com.shop.storageservice.DTO.ProductWithQuantityDTO;
 import com.shop.storageservice.DTO.StorageDuplicateDTO;
@@ -177,7 +177,7 @@ class StorageServiceTest {
 
     @Test
     void deleteProductById() {
-        OrderDuplicateDTO orderDuplicateDTO = new OrderDuplicateDTO();
+        OrderWithProductCartDTO orderDuplicateDTO = new OrderWithProductCartDTO();
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
         cart.put(productDuplicateDTO, 3);
         orderDuplicateDTO.setCart(cart);

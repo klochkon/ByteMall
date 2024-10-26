@@ -1,4 +1,4 @@
-package com.shop.purchaseservice.DTO;
+package com.shop.storageservice.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,9 +12,8 @@ import java.util.Map;
 @AllArgsConstructor
 @Data
 @Builder
-public class OrderDuplicateDTO {
+public class OrderWithProductCartDTO {
 
-    private Long id;
     private Long customerId;
     private Map<ProductDuplicateDTO, Integer> cart;
     private BigDecimal cost;

@@ -131,7 +131,7 @@ public class StorageService {
 
     @KafkaListener(topics = "order-topic", groupId = "${spring.kafka.consumer-groups.order-group.group-id}")
     @CacheEvict(value = "storage", key = "#orderDuplicateDTO.id")
-    public void deleteProductById(OrderDuplicateDTO orderDuplicateDTO) {
+    public void deleteProductById(OrderWithProductCartDTO orderDuplicateDTO) {
         for (Map.Entry<ProductDuplicateDTO, Integer> entry : orderDuplicateDTO.getCart().entrySet()) {
             entityManager.createNativeQuery("UPDATE storage " +
                             "SET quantity = quantity - :deletedQuantity " +

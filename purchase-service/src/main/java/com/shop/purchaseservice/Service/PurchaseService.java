@@ -20,13 +20,13 @@ import java.util.Map;
 public class PurchaseService {
 
     private final StorageClient storageClient;
-    private final KafkaTemplate<String, OrderDuplicateDTO> kafkaAddOrder;
+    private final KafkaTemplate<String, OrderWithProductCartDTO> kafkaAddOrder;
     private final KafkaTemplate<String, MailDTO> kafkaMail;
     private final CustomerClient customerClient;
     private final KafkaTemplate<String, SaleDuplicateDTO> kafkaSale;
 
     @Transactional
-    public InventoryStatusDTO purchase(OrderDuplicateDTO orderDuplicateDTO) {
+    public InventoryStatusDTO purchase(OrderWithProductCartDTO orderDuplicateDTO) {
         log.info("Processing purchase for order: {}", orderDuplicateDTO);
         InventoryStatusDTO inventoryStatusDTO = new InventoryStatusDTO();
 
@@ -57,7 +57,7 @@ public class PurchaseService {
         return inventoryStatusDTO;
     }
 
-    public void purchaseMailSend(OrderDuplicateDTO orderDuplicateDTO) {
+    public void purchaseMailSend(OrderWithProductCartDTO orderDuplicateDTO) {
         log.info("Sending purchase email for order ID: {}", orderDuplicateDTO.getId());
         Long customerId = orderDuplicateDTO.getCustomerId();
         CustomerDTO customerDTO = customerClient.findCustomerEmailAndNameById(customerId);

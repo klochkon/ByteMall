@@ -1,9 +1,7 @@
 package com.shop.productservice.Controller;
 
 
-import com.shop.productservice.DTO.ProductDuplicateDTO;
-import com.shop.productservice.DTO.ProductWithQuantityDTO;
-import com.shop.productservice.DTO.StorageDuplicateDTO;
+import com.shop.productservice.DTO.*;
 import com.shop.productservice.Model.Product;
 import com.shop.productservice.Service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +21,11 @@ public class ProductController {
     @GetMapping("get/all")
     public List<ProductWithQuantityDTO> getAllProductWithQuantity(@RequestBody List<StorageDuplicateDTO> storageList) {
         return service.getAllProductWithQuantity(storageList);
+    }
+
+    @GetMapping("name-identifier/group")
+    public List<OrderWithProductCartDTO> groupNameIdentifier(@RequestBody List<OrderDuplicateDTO> listOrders) {
+        return service.groupNameIdentifier(listOrders);
     }
 
     @PostMapping("create")

@@ -2,7 +2,7 @@ package com.shop.purchaseservice.Controller;
 
 
 import com.shop.purchaseservice.DTO.InventoryStatusDTO;
-import com.shop.purchaseservice.DTO.OrderDuplicateDTO;
+import com.shop.purchaseservice.DTO.OrderWithProductCartDTO;
 import com.shop.purchaseservice.Service.PurchaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,12 +19,12 @@ public class PurchaseController {
     private final PurchaseService service;
 
     @PostMapping("operation")
-    public InventoryStatusDTO purchase(@RequestBody OrderDuplicateDTO orderDuplicateDTO) {
+    public InventoryStatusDTO purchase(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         return service.purchase(orderDuplicateDTO);
     }
 
     @PostMapping("mail/send")
-    public void purchaseMailSend(@RequestBody OrderDuplicateDTO orderDuplicateDTO) {
+    public void purchaseMailSend(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         service.purchaseMailSend(orderDuplicateDTO);
     }
 }

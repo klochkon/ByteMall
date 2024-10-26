@@ -1,6 +1,6 @@
 package com.shop.customerservice.Controller;
 
-import com.shop.customerservice.DTO.OrderDuplicateDTO;
+import com.shop.customerservice.DTO.OrderWithProductCartDTO;
 import com.shop.customerservice.Model.Order;
 import com.shop.customerservice.Service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ public class OrderController {
     private final OrderService service;
 
     @PostMapping("save")
-    public Order saveOrder(@RequestBody OrderDuplicateDTO orderDuplicateDTO) {
+    public Order saveOrder(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         return service.saveOrder(orderDuplicateDTO);
     }
 

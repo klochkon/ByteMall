@@ -1,6 +1,6 @@
 package com.shop.customerservice.Service;
 
-import com.shop.customerservice.DTO.OrderDuplicateDTO;
+import com.shop.customerservice.DTO.OrderWithProductCartDTO;
 import com.shop.customerservice.Model.Order;
 import com.shop.customerservice.Repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +31,7 @@ class OrderServiceTest {
     private OrderService orderService;
 
     private Order order;
-    private OrderDuplicateDTO orderDuplicateDTO;
+    private OrderWithProductCartDTO orderDuplicateDTO;
 
     @BeforeEach
     void setUp() {
@@ -42,7 +42,7 @@ class OrderServiceTest {
                 .cost(BigDecimal.valueOf(100.0))
                 .build();
 
-        orderDuplicateDTO = OrderDuplicateDTO.builder()
+        orderDuplicateDTO = OrderWithProductCartDTO.builder()
                 .id(1L)
                 .customerId(1L)
                 .cart(Map.of())

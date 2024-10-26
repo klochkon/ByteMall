@@ -1,44 +1,41 @@
-package com.shop.customerservice.Model;
+package com.shop.customerservice.DTO;
 
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
-@Data
-@Builder
+
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "customer")
-public class Customer {
-
-    @Id
+@Data
+@Builder
+public class CustomerWithCartDTO {
     private Long id;
 
     private String email;
 
     private String phoneNumber;
 
+    private BigDecimal sale;
+
     private String nickName;
 
-    @NotBlank(message = "Name can`t be blank")
     private String name;
 
-    @NotBlank(message = "Surname can`t be blank")
     private String surname;
 
     private String sex;
 
     private LocalDate dateOfBirth;
 
-//    todo all places where in db dto do id and nameIdentifier
-    private Map<Long, Integer> cart;
+    private Map<ProductDuplicateDTO, Integer> cart;
 
     private Boolean newsLetterSubscribe;
+
 }

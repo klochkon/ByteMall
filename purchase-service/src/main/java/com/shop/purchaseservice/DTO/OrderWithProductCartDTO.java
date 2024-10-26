@@ -1,11 +1,9 @@
-package com.shop.customerservice.Model;
+package com.shop.purchaseservice.DTO;
 
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -14,12 +12,11 @@ import java.util.Map;
 @AllArgsConstructor
 @Data
 @Builder
-@Document(collection = "order")
-public class Order {
+public class OrderWithProductCartDTO {
 
-    @Id
     private Long id;
     private Long customerId;
-    private Map<Long, Integer> cart;
+    private Map<ProductDuplicateDTO, Integer> cart;
     private BigDecimal cost;
+
 }

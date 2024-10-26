@@ -1,8 +1,11 @@
 package com.shop.customerservice.Service;
 
 import com.shop.customerservice.Client.NotificationClient;
+import com.shop.customerservice.Client.ProductClient;
 import com.shop.customerservice.DTO.CustomerDTO;
+import com.shop.customerservice.DTO.CustomerWithCartDTO;
 import com.shop.customerservice.DTO.MailDTO;
+import com.shop.customerservice.DTO.ProductDuplicateDTO;
 import com.shop.customerservice.Model.Customer;
 import com.shop.customerservice.Model.Sale;
 import com.shop.customerservice.Repository.CustomerRepository;
@@ -19,6 +22,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +35,7 @@ public class CustomerService {
     private final CustomerRepository repository;
     private final KafkaTemplate<String, MailDTO> kafkaRegistration;
     private final NotificationClient notificationClient;
+    private final ProductClient productClient;
     private final MongoTemplate mongoTemplate;
     private final SaleService saleService;
 
@@ -75,11 +81,36 @@ public class CustomerService {
     }
 
     @Cacheable(value = "customer", key = "#id")
-    public Customer findCustomerById(Long id) {
+    public CustomerWithCartDTO findCustomerById(Long id) {
         log.info("Finding customer by id: {}", id);
         Customer customer = repository.findById(id).orElse(null);
         log.info("Customer found: {}", customer);
-        return customer;
+        List<Long> listId = new ArrayList<>();
+        List<Integer> listQuantity = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : customer.getCart().entrySet()) {
+            listId.add(entry.getKey());
+            listQuantity.add(entry.getValue());
+        }
+        List<ProductDuplicateDTO> listProducts = productClient.nameIdentifier(listId);
+        Map<ProductDuplicateDTO, Integer> cartWithProduct = new HashMap<>();
+        for (ProductDuplicateDTO product : listProducts) {
+            cartWithProduct.put(product, listQuantity.remove(0));
+        }
+        CustomerWithCartDTO customerWithCartDTO;
+        customerWithCartDTO = CustomerWithCartDTO.builder()
+                .name(customer.getName())
+                .email(customer.getEmail())
+                .sex(customer.getSex())
+                .dateOfBirth(customer.getDateOfBirth())
+                .newsLetterSubscribe(customer.getNewsLetterSubscribe())
+                .surname(customer.getName())
+                .nickName(customer.getNickName())
+                .phoneNumber(customer.getPhoneNumber())
+                .id(customer.getId())
+                .cart(cartWithProduct)
+                .build();
+
+        return customerWithCartDTO;
     }
 
     @Cacheable(value = "allCustomer")

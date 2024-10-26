@@ -16,6 +16,6 @@ public class OrderDuplicateDTO {
 
     private Long id;
     private Long customerId;
-    private Map<ProductDuplicateDTO, Integer> cart;
+    private Map<Long, Integer> cart;
     private BigDecimal cost;
 }

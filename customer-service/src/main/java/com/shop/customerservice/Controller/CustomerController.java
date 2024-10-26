@@ -1,6 +1,7 @@
 package com.shop.customerservice.Controller;
 
 import com.shop.customerservice.DTO.CustomerDTO;
+import com.shop.customerservice.DTO.CustomerWithCartDTO;
 import com.shop.customerservice.Model.Customer;
 import com.shop.customerservice.Service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class CustomerController {
     }
 
     @GetMapping("find/{id}")
-    public Customer findCustomerById(@PathVariable Long id) {
+    public CustomerWithCartDTO findCustomerById(@PathVariable Long id) {
         return service.findCustomerById(id);
     }
 

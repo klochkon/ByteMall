@@ -1,10 +1,7 @@
 package com.shop.productservice.Service;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.shop.productservice.DTO.MailDTO;
-import com.shop.productservice.DTO.ProductDuplicateDTO;
-import com.shop.productservice.DTO.ProductWithQuantityDTO;
-import com.shop.productservice.DTO.StorageDuplicateDTO;
+import com.shop.productservice.DTO.*;
 import com.shop.productservice.Model.Product;
 import com.shop.productservice.Repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -122,6 +119,34 @@ public class ProductService {
                 .map(entityMap::get)
                 .toList();
 
+    }
+
+    public List<OrderWithProductCartDTO> groupNameIdentifier(List<OrderDuplicateDTO> listOrders) {
+        List<OrderWithProductCartDTO> resultList = new ArrayList<>();
+        for (OrderDuplicateDTO orderDuplicateDTO: listOrders) {
+
+
+            List<Long> listId = new ArrayList<>();
+            List<Integer> listQuantity = new ArrayList<>();
+            for (Map.Entry<Long, Integer> entry : orderDuplicateDTO.getCart().entrySet()) {
+                listId.add(entry.getKey());
+                listQuantity.add(entry.getValue());
+            }
+            List<ProductDuplicateDTO> listProducts = this.nameIdentifier(listId);
+            Map<ProductDuplicateDTO, Integer> cartWithProduct = new HashMap<>();
+            for (ProductDuplicateDTO product : listProducts) {
+                cartWithProduct.put(product, listQuantity.remove(0));
+            }
+            OrderWithProductCartDTO orderWithProductCartDTO;
+            orderWithProductCartDTO = OrderWithProductCartDTO.builder()
+                    .customerId(orderDuplicateDTO.getCustomerId())
+                    .id(orderDuplicateDTO.getId())
+                    .cost(orderDuplicateDTO.getCost())
+                    .cart(cartWithProduct)
+                    .build();
+            resultList.add(orderWithProductCartDTO);
+        }
+        return resultList;
     }
 
     @CacheEvict(value = {"product", "allProduct"}, key = "#id")
