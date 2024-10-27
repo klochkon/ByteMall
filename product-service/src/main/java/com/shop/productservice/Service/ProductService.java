@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,28 +62,27 @@ public class ProductService {
         return resultList;
     }
 
-//    todo nameIdentifier must be universal
-//    @KafkaListener(topics = "product-name-identifier-topic", groupId = "${spring.kafka.consumer-groups.product-name-identifier-group.group-id}")
-//    public void nameIdentifier(List<StorageDuplicateDTO> productsWithLack) {
-//        MailDTO mailDTO = new MailDTO();
-//        Map<String, Object> data = new HashMap<>();
-//        List<Product> products = repository.findAll();
-//
-//        Map<Long, String> productMap = new HashMap<>();
-//        for (Product product : products) {
-//            productMap.put(product.getId(), product.getName());
-//        }
-//
-//        Map<String, Integer> LackMap = new HashMap<>();
-//        for (StorageDuplicateDTO storageDuplicateDTO : productsWithLack) {
-//            LackMap.put(productMap.get(storageDuplicateDTO.getCustomerId()), storageDuplicateDTO.getQuantity());
-//        }
-//
-//        data.put("MapOfLackProducts", LackMap);
-//        mailDTO.setData(data);
-//        kafkaVerification.send("mail-topic", mailDTO);
-//        log.info("Sent mailDTO with lack products: {}", mailDTO);
-//    }
+    @KafkaListener(topics = "product-name-identifier-topic", groupId = "${spring.kafka.consumer-groups.product-name-identifier-group.group-id}")
+    public void productVerification(List<StorageDuplicateDTO> productsWithLack) {
+        MailDTO mailDTO = new MailDTO();
+        Map<String, Object> data = new HashMap<>();
+        List<Product> products = repository.findAll();
+
+        Map<Long, String> productMap = new HashMap<>();
+        for (Product product : products) {
+            productMap.put(product.getId(), product.getName());
+        }
+
+        Map<String, Integer> LackMap = new HashMap<>();
+        for (StorageDuplicateDTO storageDuplicateDTO : productsWithLack) {
+            LackMap.put(productMap.get(storageDuplicateDTO.getCustomerId()), storageDuplicateDTO.getQuantity());
+        }
+
+        data.put("MapOfLackProducts", LackMap);
+        mailDTO.setData(data);
+        kafkaVerification.send("mail-topic", mailDTO);
+        log.info("Sent mailDTO with lack products: {}", mailDTO);
+    }
 
     @CachePut(value = {"allProduct", "product"}, key = "#product.id")
     public Product createProduct(Product product, MultipartFile photo) throws IOException {

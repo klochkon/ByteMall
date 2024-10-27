@@ -29,12 +29,13 @@ public class PurchaseService {
     public InventoryStatusDTO purchase(OrderWithProductCartDTO orderDuplicateDTO) {
         log.info("Processing purchase for order: {}", orderDuplicateDTO);
         InventoryStatusDTO inventoryStatusDTO = new InventoryStatusDTO();
-
+//todo order withproductcartDTO and orderDuplicateDTO in all project
         if (storageClient.isOrderInStorage(orderDuplicateDTO.getCart())) {
             log.info("Order is in storage, sending to Kafka topic.");
             kafkaAddOrder.send("order-topic", orderDuplicateDTO);
             purchaseMailSend(orderDuplicateDTO);
             customerClient.cleanCart(orderDuplicateDTO.getCustomerId());
+
 
             if (orderDuplicateDTO.getCost().compareTo(new BigDecimal("500.0")) > 0) {
                 SaleDuplicateDTO saleDuplicateDTO = SaleDuplicateDTO.builder()

@@ -13,6 +13,7 @@ spring:
       order-group:
         group-id: storage-after-purchase-reduce-group
 
+
   datasource:
     url: jdbc:postgresql://localhost:5432/storage
     password: klochko_08

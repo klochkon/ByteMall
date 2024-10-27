@@ -31,12 +31,12 @@ public class OrderController {
     }
 
     @GetMapping("find/{id}")
-    public Order findById(@PathVariable Long id) {
+    public OrderWithProductCartDTO findById(@PathVariable Long id) {
         return service.findOrderById(id);
     }
 
     @GetMapping("find/{customerId}")
-    public List<Order> findByCustomerId(@PathVariable Long customerId) {
+    public List<OrderWithProductCartDTO> findByCustomerId(@PathVariable Long customerId) {
         return service.findAllByCustomerId(customerId);
     }
 }
