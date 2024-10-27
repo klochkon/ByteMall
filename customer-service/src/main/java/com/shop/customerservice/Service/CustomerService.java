@@ -46,19 +46,23 @@ public class CustomerService {
                 "Email", customer.getEmail(),
                 "Name", customer.getName()
         );
+        log.info("Mail data prepared for customer: {}", data);
 
         MailDTO mailDTO = MailDTO.builder()
                 .to(customer.getEmail())
                 .data(data)
                 .build();
+        log.info("MailDTO created: {}", mailDTO);
 
         Sale sale = Sale.builder()
                 .customerId(customer.getId())
                 .sale(new BigDecimal("0.1"))
                 .build();
+        log.info("Sale created: {}", sale);
 
         saleService.saveSale(sale);
         kafkaRegistration.send("mail-topic", mailDTO);
+        log.info("Registration email sent to topic for customer: {}", customer.getEmail());
 
         Customer savedCustomer = repository.save(customer);
         log.info("Customer saved successfully: {}", savedCustomer);
@@ -85,32 +89,39 @@ public class CustomerService {
         log.info("Finding customer by id: {}", id);
         Customer customer = repository.findById(id).orElse(null);
         log.info("Customer found: {}", customer);
-        List<Long> listId = new ArrayList<>();
-        List<Integer> listQuantity = new ArrayList<>();
-        for (Map.Entry<Long, Integer> entry : customer.getCart().entrySet()) {
-            listId.add(entry.getKey());
-            listQuantity.add(entry.getValue());
-        }
-        List<ProductDuplicateDTO> listProducts = productClient.nameIdentifier(listId);
-        Map<ProductDuplicateDTO, Integer> cartWithProduct = new HashMap<>();
-        for (ProductDuplicateDTO product : listProducts) {
-            cartWithProduct.put(product, listQuantity.remove(0));
-        }
-        CustomerWithCartDTO customerWithCartDTO;
-        customerWithCartDTO = CustomerWithCartDTO.builder()
-                .name(customer.getName())
-                .email(customer.getEmail())
-                .sex(customer.getSex())
-                .dateOfBirth(customer.getDateOfBirth())
-                .newsLetterSubscribe(customer.getNewsLetterSubscribe())
-                .surname(customer.getName())
-                .nickName(customer.getNickName())
-                .phoneNumber(customer.getPhoneNumber())
-                .id(customer.getId())
-                .cart(cartWithProduct)
-                .build();
 
-        return customerWithCartDTO;
+        if (customer != null) {
+            List<Long> listId = new ArrayList<>();
+            List<Integer> listQuantity = new ArrayList<>();
+            for (Map.Entry<Long, Integer> entry : customer.getCart().entrySet()) {
+                listId.add(entry.getKey());
+                listQuantity.add(entry.getValue());
+            }
+            log.info("Customer cart product IDs: {}", listId);
+            log.info("Customer cart quantities: {}", listQuantity);
+
+            List<ProductDuplicateDTO> listProducts = productClient.nameIdentifier(listId);
+            Map<ProductDuplicateDTO, Integer> cartWithProduct = new HashMap<>();
+            for (ProductDuplicateDTO product : listProducts) {
+                cartWithProduct.put(product, listQuantity.remove(0));
+            }
+            CustomerWithCartDTO customerWithCartDTO = CustomerWithCartDTO.builder()
+                    .name(customer.getName())
+                    .email(customer.getEmail())
+                    .sex(customer.getSex())
+                    .dateOfBirth(customer.getDateOfBirth())
+                    .newsLetterSubscribe(customer.getNewsLetterSubscribe())
+                    .surname(customer.getName())
+                    .nickName(customer.getNickName())
+                    .phoneNumber(customer.getPhoneNumber())
+                    .id(customer.getId())
+                    .cart(cartWithProduct)
+                    .build();
+
+            log.info("CustomerWithCartDTO created: {}", customerWithCartDTO);
+            return customerWithCartDTO;
+        }
+        return null;
     }
 
     @Cacheable(value = "allCustomer")
@@ -163,6 +174,7 @@ public class CustomerService {
         log.info("Cleaning cart for customer with id: {}", id);
         Query query = new Query(Criteria.where("id").is(id));
         Update update = new Update().set("cart", Map.of());
+        log.info("Executing cart clean update for customer with id: {}", id);
         mongoTemplate.updateFirst(query, update, "customer");
         log.info("Cart cleaned for customer with id: {}", id);
     }

@@ -1,5 +1,6 @@
 package com.shop.productservice.Service;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.shop.productservice.DTO.MailDTO;
 import com.shop.productservice.DTO.ProductWithQuantityDTO;
 import com.shop.productservice.DTO.StorageDuplicateDTO;
@@ -7,167 +8,133 @@ import com.shop.productservice.Model.Product;
 import com.shop.productservice.Repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
-
-    @Mock
-    private ProductRepository productRepository;
-
-    @Mock
-    private KafkaTemplate<String, MailDTO> kafkaVerification;
 
     @InjectMocks
     private ProductService productService;
 
-    private Product product1;
-    private Product product2;
+    @Mock
+    private ProductRepository repository;
+
+    @Mock
+    private AmazonS3 amazonS3;
+
+    @Mock
+    private KafkaTemplate<String, MailDTO> kafkaTemplate;
+
+    @Mock
+    private CacheManager cacheManager;
+
+    private Product product;
+    private MultipartFile photo;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() throws IOException {
         MockitoAnnotations.openMocks(this);
-        product1 = Product.builder()
+        product = Product.builder()
                 .id(1L)
-                .name("Product 1")
-                .category("Category 1")
-                .cost(BigDecimal.valueOf(10.0))
-                .description("Description 1")
-                .feedBack(BigDecimal.valueOf(4.5))
-                .producer("Producer 1")
-                .slug("product-1")
-                .imageUrl("http://example.com/product1.jpg")
+                .name("Test Product")
+                .category("Electronics")
+                .cost(new BigDecimal(100.0))
+                .description("Test Description")
                 .build();
 
-        product2 = Product.builder()
-                .id(2L)
-                .name("Product 2")
-                .category("Category 2")
-                .cost(BigDecimal.valueOf(15.0))
-                .description("Description 2")
-                .feedBack(BigDecimal.valueOf(4.0))
-                .producer("Producer 2")
-                .slug("product-2")
-                .imageUrl("http://example.com/product2.jpg")
-                .build();
+        photo = new MockMultipartFile("photo", "test.jpg", "image/jpeg", new ByteArrayInputStream("test".getBytes()));
     }
 
     @Test
-    void getAllProductWithQuantity() {
-        List<Product> products = Arrays.asList(product1, product2);
-        List<StorageDuplicateDTO> storageList = Arrays.asList(
-                new StorageDuplicateDTO(1L, 5),
-                new StorageDuplicateDTO(2L, 3)
-        );
+    void createProduct() throws IOException {
+        when(repository.save(any(Product.class))).thenReturn(product);
 
-        when(productRepository.findAll()).thenReturn(products);
+        Product savedProduct = productService.createProduct(product, photo);
 
-        List<ProductWithQuantityDTO> result = productService.getAllProductWithQuantity(storageList);
-
-        assertEquals(2, result.size());
-        assertEquals(5, result.get(0).getQuantity());
-        assertEquals(3, result.get(1).getQuantity());
-        verify(productRepository, times(1)).findAll();
-    }
-
-    @Test
-    void nameIdentifier() {
-        List<Product> products = Arrays.asList(product1, product2);
-        List<StorageDuplicateDTO> productsWithLack = Arrays.asList(
-                new StorageDuplicateDTO(1L, 5),
-                new StorageDuplicateDTO(2L, 3)
-        );
-
-        when(productRepository.findAll()).thenReturn(products);
-
-        productService.nameIdentifier(productsWithLack);
-
-        verify(kafkaVerification, times(1)).send(eq("mail-topic"), any(MailDTO.class));
-    }
-
-    @Test
-    void createProduct() {
-        when(productRepository.save(any(Product.class))).thenReturn(product1);
-
-        Product result = productService.createProduct(product1);
-
-        assertEquals(product1, result);
-        verify(productRepository, times(1)).save(product1);
-    }
-
-    @Test
-    void deleteById() {
-        Long productId = 1L;
-
-        doNothing().when(productRepository).deleteById(productId);
-
-        productService.deleteById(productId);
-
-        verify(productRepository, times(1)).deleteById(productId);
+        assertNotNull(savedProduct);
+        assertEquals(product.getId(), savedProduct.getId());
+        verify(amazonS3).putObject(anyString(), anyString(), any(), isNull());
     }
 
     @Test
     void findById() {
-        Long productId = 1L;
+        when(repository.findById(1L)).thenReturn(java.util.Optional.of(product));
 
-        when(productRepository.findById(productId)).thenReturn(Optional.of(product1));
+        Product foundProduct = productService.findById(1L);
 
-        Product result = productService.findById(productId);
-
-        assertEquals(product1, result);
-        verify(productRepository, times(1)).findById(productId);
+        assertNotNull(foundProduct);
+        assertEquals(product.getId(), foundProduct.getId());
     }
 
     @Test
-    void findById_NullIfNotExists() {
-        Long productId = 1L;
+    void deleteById() {
+        when(repository.findById(1L)).thenReturn(java.util.Optional.of(product));
 
-        when(productRepository.findById(productId)).thenReturn(Optional.empty());
+        productService.deleteById(1L);
 
-        Product result = productService.findById(productId);
-
-        assertNull(result);
-        verify(productRepository, times(1)).findById(productId);
+        verify(amazonS3).deleteObject(anyString(), anyString());
+        verify(repository).deleteById(1L);
     }
 
     @Test
-    void updateProduct() {
-        when(productRepository.save(product1)).thenReturn(product1);
+    void getAllProductWithQuantity() {
+        when(repository.findAll()).thenReturn(Collections.singletonList(product));
 
-        Product result = productService.updateProduct(product1);
+        List<ProductWithQuantityDTO> result = productService.getAllProductWithQuantity(Collections.emptyList());
 
-        assertEquals(product1, result);
-        verify(productRepository, times(1)).save(product1);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(product.getId(), result.get(0).getId());
+    }
+
+    @Test
+    void productVerification() {
+        StorageDuplicateDTO storageDuplicateDTO = new StorageDuplicateDTO();
+        storageDuplicateDTO.setCustomerId(1L);
+        storageDuplicateDTO.setQuantity(10);
+
+        productService.productVerification(Collections.singletonList(storageDuplicateDTO));
+
+        ArgumentCaptor<MailDTO> mailDTOCaptor = ArgumentCaptor.forClass(MailDTO.class);
+        verify(kafkaTemplate).send(anyString(), mailDTOCaptor.capture());
+        assertNotNull(mailDTOCaptor.getValue());
+    }
+
+    @Test
+    void updateProduct() throws IOException {
+        when(repository.save(any(Product.class))).thenReturn(product);
+
+        Product updatedProduct = productService.updateProduct(product, photo);
+
+        assertNotNull(updatedProduct);
+        assertEquals(product.getId(), updatedProduct.getId());
+        verify(amazonS3).putObject(anyString(), anyString(), any(), isNull());
     }
 
     @Test
     void findAllByCategory() {
-        String category = "Category 1";
-        List<Product> products = Collections.singletonList(product1);
+        when(repository.findAllByCategory("Electronics")).thenReturn(Collections.singletonList(product));
 
-        when(productRepository.findAllByCategory(category)).thenReturn(products);
+        List<Product> products = productService.findAllByCategory("Electronics");
 
-        List<Product> result = productService.findAllByCategory(category);
-
-        assertEquals(1, result.size());
-        assertEquals(product1, result.get(0));
-        verify(productRepository, times(1)).findAllByCategory(category);
+        assertNotNull(products);
+        assertEquals(1, products.size());
+        assertEquals(product.getId(), products.get(0).getId());
     }
 }

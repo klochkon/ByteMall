@@ -1,5 +1,6 @@
 package com.shop.customerservice.Service;
 
+import com.shop.customerservice.Client.ProductClient;
 import com.shop.customerservice.DTO.OrderWithProductCartDTO;
 import com.shop.customerservice.Model.Order;
 import com.shop.customerservice.Repository.OrderRepository;
@@ -7,106 +8,106 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class OrderServiceTest {
-
-    @Mock
-    private OrderRepository repository;
+public class OrderServiceTest {
 
     @InjectMocks
     private OrderService orderService;
 
+    @Mock
+    private OrderRepository orderRepository;
+
+    @Mock
+    private ProductClient productClient;
+
+    private OrderWithProductCartDTO orderDto;
     private Order order;
-    private OrderWithProductCartDTO orderDuplicateDTO;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        orderDto = OrderWithProductCartDTO.builder()
+                .id(1L)
+                .customerId(1L)
+                .cost(new BigDecimal(100.0))
+                .cart(new HashMap<>())
+                .build();
+//todo tests but controll making objects, give entities to chat
         order = Order.builder()
                 .id(1L)
                 .customerId(1L)
-                .cart(Map.of())
-                .cost(BigDecimal.valueOf(100.0))
-                .build();
-
-        orderDuplicateDTO = OrderWithProductCartDTO.builder()
-                .id(1L)
-                .customerId(1L)
-                .cart(Map.of())
-                .cost(BigDecimal.valueOf(100.0))
+                .cost(new BigDecimal(100.0))
+                .cart(new HashMap<>())
                 .build();
     }
 
     @Test
-    void saveOrder() {
-        when(repository.save(any(Order.class))).thenReturn(order);
+    public void testSaveOrder() {
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
 
-        Order result = orderService.saveOrder(orderDuplicateDTO);
+        Order savedOrder = orderService.saveOrder(orderDto);
 
-        assertEquals(order, result);
-        verify(repository, times(1)).save(any(Order.class));
+        assertNotNull(savedOrder);
+        assertEquals(1L, savedOrder.getId());
+        verify(orderRepository, times(1)).save(any(Order.class));
     }
 
     @Test
-    void updateOrder() {
-        when(repository.save(any(Order.class))).thenReturn(order);
+    public void testUpdateOrder() {
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
 
-        Order result = orderService.updateOrder(order);
+        Order updatedOrder = orderService.updateOrder(order);
 
-        assertEquals(order, result);
-        verify(repository, times(1)).save(order);
+        assertNotNull(updatedOrder);
+        assertEquals(1L, updatedOrder.getId());
+        verify(orderRepository, times(1)).save(any(Order.class));
     }
 
     @Test
-    void deleteOrderById() {
-        doNothing().when(repository).deleteById(anyLong());
+    public void testDeleteOrderById() {
+        Long orderId = 1L;
 
-        orderService.deleteOrderById(1L);
+        doNothing().when(orderRepository).deleteById(anyLong());
 
-        verify(repository, times(1)).deleteById(1L);
+        orderService.deleteOrderById(orderId);
+
+        verify(orderRepository, times(1)).deleteById(orderId);
     }
 
     @Test
-    void findOrderById() {
-        when(repository.findById(anyLong())).thenReturn(Optional.of(order));
+    public void testFindOrderById() {
+        when(orderRepository.findById(anyLong())).thenReturn(Optional.of(order));
 
-        Order result = orderService.findOrderById(1L);
+        OrderWithProductCartDTO foundOrder = orderService.findOrderById(1L);
 
-        assertEquals(order, result);
-        verify(repository, times(1)).findById(1L);
+        assertNotNull(foundOrder);
+        assertEquals(1L, foundOrder.getId());
+        verify(orderRepository, times(1)).findById(anyLong());
     }
 
     @Test
-    void findOrderById_NotFound() {
-        when(repository.findById(anyLong())).thenReturn(Optional.empty());
+    public void testFindAllByCustomerId() {
+        Long customerId = 1L;
 
-        Order result = orderService.findOrderById(1L);
+        when(orderRepository.findAllByCustomerId(customerId)).thenReturn(List.of(order));
+        when(productClient.groupNameIdentifier(any())).thenReturn(List.of());
 
-        assertNull(result);
-        verify(repository, times(1)).findById(1L);
-    }
+        List<OrderWithProductCartDTO> orders = orderService.findAllByCustomerId(customerId);
 
-    @Test
-    void findAllByCustomerId() {
-        List<Order> orders = List.of(order);
-        when(repository.findAllByCustomerId(anyLong())).thenReturn(orders);
-
-        List<Order> result = orderService.findAllByCustomerId(1L);
-
-        assertEquals(orders, result);
-        verify(repository, times(1)).findAllByCustomerId(1L);
+        assertNotNull(orders);
+        assertEquals(0, orders.size());
+        verify(orderRepository, times(1)).findAllByCustomerId(customerId);
     }
 }

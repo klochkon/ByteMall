@@ -1,129 +1,157 @@
 package com.shop.productservice.Controller;
 
-import com.shop.productservice.DTO.ProductWithQuantityDTO;
+import com.shop.productservice.DTO.*;
 import com.shop.productservice.Model.Product;
 import com.shop.productservice.Service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(ProductController.class)
 class ProductControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Mock
     private ProductService service;
 
-    @InjectMocks
-    private ProductController controller;
-
-    private MockMvc mockMvc;
     private Product product;
+    private MockMultipartFile photo;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-
+    void setUp() throws IOException {
         product = Product.builder()
                 .id(1L)
-                .name("Product 1")
+                .name("Test Product")
                 .category("Electronics")
-                .cost(BigDecimal.valueOf(499.99))
-                .description("Description")
-                .slug("product-1")
-                .producer("Producer 1")
-                .feedBack(BigDecimal.valueOf(4.5))
+                .cost(new BigDecimal(100.0))
+                .description("Test Description")
                 .build();
+
+        photo = new MockMultipartFile("photo", "test.jpg", "image/jpeg", new ByteArrayInputStream("test".getBytes()));
     }
 
     @Test
     void getAllProductWithQuantity() throws Exception {
-        List<ProductWithQuantityDTO> productWithQuantityList = new ArrayList<>();
-
-        when(service.getAllProductWithQuantity(any())).thenReturn(productWithQuantityList);
+        when(service.getAllProductWithQuantity(any())).thenReturn(Collections.singletonList(new ProductWithQuantityDTO()));
 
         mockMvc.perform(get("/api/v1/product/get/all")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("[]")) // Пустий JSON для тіла запиту
+                        .content("[]")) // Sending an empty JSON array
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isNotEmpty());
+    }
+
+    @Test
+    void groupNameIdentifier() throws Exception {
+        when(service.groupNameIdentifier(any())).thenReturn(Collections.singletonList(new OrderWithProductCartDTO()));
+
+        mockMvc.perform(get("/api/v1/product/name-identifier/group")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[]")) // Sending an empty JSON array
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isNotEmpty());
     }
 
     @Test
     void createProduct() throws Exception {
-        when(service.createProduct(any(Product.class))).thenReturn(product);
+        when(service.createProduct(any(), any())).thenReturn(product);
 
-        mockMvc.perform(post("/api/v1/product/create")
+        mockMvc.perform(multipart("/api/v1/product/create")
+                        .file(photo)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Product 1\", \"category\":\"Electronics\"}"))
+                        .content(new ObjectMapper().writeValueAsString(product))) // Sending the product as JSON
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Product 1"))
-                .andExpect(jsonPath("$.category").value("Electronics"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(product.getId()));
     }
 
     @Test
     void updateProduct() throws Exception {
-        when(service.updateProduct(any(Product.class))).thenReturn(product);
+        when(service.updateProduct(any(), any())).thenReturn(product);
 
-        mockMvc.perform(put("/api/v1/product/update")
+        mockMvc.perform(multipart("/api/v1/product/update")
+                        .file(photo)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\":1, \"name\":\"Updated Product\"}"))
+                        .content(new ObjectMapper().writeValueAsString(product))) // Sending the product as JSON
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Updated Product"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(product.getId()));
     }
 
     @Test
     void deleteProductById() throws Exception {
-        mockMvc.perform(delete("/api/v1/product/delete/{id}", 1L))
+        doNothing().when(service).deleteById(anyLong());
+
+        mockMvc.perform(delete("/api/v1/product/delete/1"))
                 .andExpect(status().isOk());
+
+        verify(service).deleteById(1L);
+    }
+
+    @Test
+    void nameIdentifier() throws Exception {
+        when(service.nameIdentifier(any())).thenReturn(Collections.singletonList(new ProductDuplicateDTO()));
+
+        mockMvc.perform(get("/api/v1/product/name-identifier")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[1]")) // Sending a JSON array with one ID
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isNotEmpty());
     }
 
     @Test
     void shareProduct() throws Exception {
-        when(service.findBySlug(anyString())).thenReturn(product);
+        when(service.findBySlug(any())).thenReturn(product);
 
-        mockMvc.perform(get("/api/v1/product/share/{slug}", "product-1"))
+        mockMvc.perform(get("/api/v1/product/share/test-slug"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.slug").value("product-1"))
-                .andExpect(jsonPath("$.name").value("Product 1"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(product.getId()));
     }
 
     @Test
     void getProductById() throws Exception {
         when(service.findById(anyLong())).thenReturn(product);
 
-        mockMvc.perform(get("/api/v1/product/get/{id}", 1L))
+        mockMvc.perform(get("/api/v1/product/get/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Product 1"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(product.getId()));
     }
 
     @Test
     void findProductByCategory() throws Exception {
-        List<Product> productList = new ArrayList<>();
-        productList.add(product);
+        when(service.findAllByCategory(any())).thenReturn(Collections.singletonList(product));
 
-        when(service.findAllByCategory(anyString())).thenReturn(productList);
-
-        mockMvc.perform(get("/api/v1/product/get/category/{category}", "Electronics"))
+        mockMvc.perform(get("/api/v1/product/get/category/Electronics"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].category").value("Electronics"))
-                .andExpect(jsonPath("$[0].name").value("Product 1"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$[0].id").value(product.getId()));
     }
 }

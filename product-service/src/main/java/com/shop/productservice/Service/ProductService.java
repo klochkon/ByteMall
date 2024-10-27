@@ -30,13 +30,13 @@ public class ProductService {
     private final ProductRepository repository;
     private final AmazonS3 amazonS3;
 
-
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
     private final KafkaTemplate<String, MailDTO> kafkaVerification;
 
     @Cacheable(value = "productWithQuantity")
     public List<ProductWithQuantityDTO> getAllProductWithQuantity(List<StorageDuplicateDTO> storageList) {
+        log.info("Fetching all products with quantity.");
         List<Product> products = repository.findAll();
         List<ProductWithQuantityDTO> resultList = new ArrayList<>();
 
@@ -64,6 +64,7 @@ public class ProductService {
 
     @KafkaListener(topics = "product-name-identifier-topic", groupId = "${spring.kafka.consumer-groups.product-name-identifier-group.group-id}")
     public void productVerification(List<StorageDuplicateDTO> productsWithLack) {
+        log.info("Received products with lack for verification: {}", productsWithLack);
         MailDTO mailDTO = new MailDTO();
         Map<String, Object> data = new HashMap<>();
         List<Product> products = repository.findAll();
@@ -86,6 +87,7 @@ public class ProductService {
 
     @CachePut(value = {"allProduct", "product"}, key = "#product.id")
     public Product createProduct(Product product, MultipartFile photo) throws IOException {
+        log.info("Creating product: {}", product);
         amazonS3.putObject(bucketName, product.getName(), photo.getInputStream(), null);
         log.info("Product photo with name: {} put in bucket", product.getName());
         String objectUrl = amazonS3.getUrl(bucketName, product.getName()).toString();
@@ -96,8 +98,9 @@ public class ProductService {
     }
 
     public List<ProductDuplicateDTO> nameIdentifier(List<Long> listId) {
+        log.info("Identifying names for product IDs: {}", listId);
         List<Product> productsList = repository.findAllById(listId);
-        List <ProductDuplicateDTO> dtoList = new ArrayList<>();
+        List<ProductDuplicateDTO> dtoList = new ArrayList<>();
         for (Product product : productsList) {
             ProductDuplicateDTO duplicate;
             duplicate = ProductDuplicateDTO.builder()
@@ -115,17 +118,17 @@ public class ProductService {
         }
         Map<Long, ProductDuplicateDTO> entityMap = dtoList.stream()
                 .collect(Collectors.toMap(ProductDuplicateDTO::getId, entity -> entity));
-        return listId.stream()
+        List<ProductDuplicateDTO> result = listId.stream()
                 .map(entityMap::get)
                 .toList();
-
+        log.info("Identified names for products: {}", result);
+        return result;
     }
 
     public List<OrderWithProductCartDTO> groupNameIdentifier(List<OrderDuplicateDTO> listOrders) {
+        log.info("Grouping names for order identifiers: {}", listOrders);
         List<OrderWithProductCartDTO> resultList = new ArrayList<>();
-        for (OrderDuplicateDTO orderDuplicateDTO: listOrders) {
-
-
+        for (OrderDuplicateDTO orderDuplicateDTO : listOrders) {
             List<Long> listId = new ArrayList<>();
             List<Integer> listQuantity = new ArrayList<>();
             for (Map.Entry<Long, Integer> entry : orderDuplicateDTO.getCart().entrySet()) {
@@ -146,11 +149,13 @@ public class ProductService {
                     .build();
             resultList.add(orderWithProductCartDTO);
         }
+        log.info("Grouped names for order identifiers result: {}", resultList);
         return resultList;
     }
 
     @CacheEvict(value = {"product", "allProduct"}, key = "#id")
     public void deleteById(Long id) {
+        log.info("Deleting product by ID: {}", id);
         Product product = repository.findById(id).orElse(null);
         amazonS3.deleteObject(bucketName, product.getName());
         log.info("Product photo with name: {} deleted from bucket", product.getName());
@@ -160,6 +165,7 @@ public class ProductService {
 
     @Cacheable(value = "product", key = "#id")
     public Product findById(Long id) {
+        log.info("Finding product by ID: {}", id);
         Product product = repository.findById(id).orElse(null);
         log.info("Product found: {}", product);
         return product;
@@ -167,6 +173,7 @@ public class ProductService {
 
     @Cacheable(value = "product", key = "#slug")
     public Product findBySlug(String slug) {
+        log.info("Finding product by slug: {}", slug);
         Product product = repository.findProductBySlug(slug);
         log.info("Product found by slug '{}': {}", slug, product);
         return product;
@@ -174,6 +181,7 @@ public class ProductService {
 
     @CachePut(value = {"product", "allProduct"}, key = "#product.id")
     public Product updateProduct(Product product, MultipartFile photo) throws IOException {
+        log.info("Updating product: {}", product);
         Product updatedProduct = this.createProduct(product, photo);
         log.info("Product updated successfully: {}", updatedProduct);
         return updatedProduct;
@@ -181,6 +189,7 @@ public class ProductService {
 
     @Cacheable(value = "allProduct", key = "#category")
     public List<Product> findAllByCategory(String category) {
+        log.info("Finding all products by category: {}", category);
         List<Product> products = repository.findAllByCategory(category);
         log.info("Found {} products in category '{}'", products.size(), category);
         return products;

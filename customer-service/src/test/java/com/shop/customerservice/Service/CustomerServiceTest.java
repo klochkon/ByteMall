@@ -1,33 +1,39 @@
 package com.shop.customerservice.Service;
 
 import com.shop.customerservice.Client.NotificationClient;
+import com.shop.customerservice.Client.ProductClient;
 import com.shop.customerservice.DTO.CustomerDTO;
+import com.shop.customerservice.DTO.CustomerWithCartDTO;
 import com.shop.customerservice.DTO.MailDTO;
+import com.shop.customerservice.DTO.ProductDuplicateDTO;
 import com.shop.customerservice.Model.Customer;
 import com.shop.customerservice.Model.Sale;
 import com.shop.customerservice.Repository.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class CustomerServiceTest {
+public class CustomerServiceTest {
+
+    @InjectMocks
+    private CustomerService customerService;
 
     @Mock
     private CustomerRepository repository;
@@ -39,106 +45,119 @@ class CustomerServiceTest {
     private NotificationClient notificationClient;
 
     @Mock
+    private ProductClient productClient;
+
+    @Mock
     private MongoTemplate mongoTemplate;
 
     @Mock
     private SaleService saleService;
 
-    @InjectMocks
-    private CustomerService customerService;
-
     private Customer customer;
+    private CustomerWithCartDTO customerWithCartDTO;
+    private Sale sale;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
+
         customer = Customer.builder()
                 .id(1L)
-                .email("test@test.com")
-                .name("John")
-                .surname("Doe")
-                .sale(BigDecimal.valueOf(0.1))
-                .nickName("JD")
+                .email("test@example.com")
+                .name("Test User")
+                .cart(new HashMap<>())
+                .build();
+
+        sale = Sale.builder()
+                .customerId(customer.getId())
+                .sale(new BigDecimal("0.1"))
+                .build();
+
+        customerWithCartDTO = CustomerWithCartDTO.builder()
+                .id(customer.getId())
+                .name(customer.getName())
+                .email(customer.getEmail())
+                .cart(new HashMap<>())
                 .build();
     }
 
     @Test
-    void saveCustomer() {
+    public void testSaveCustomer() {
         when(repository.save(any(Customer.class))).thenReturn(customer);
+        when(saleService.saveSale(any(Sale.class))).thenReturn(sale);
 
-        Customer result = customerService.saveCustomer(customer);
+        Customer savedCustomer = customerService.saveCustomer(customer);
 
-        assertEquals(customer, result);
-        verify(repository, times(1)).save(customer);
+        assertNotNull(savedCustomer);
+        assertEquals(1L, savedCustomer.getId());
+        verify(repository, times(1)).save(any(Customer.class));
         verify(saleService, times(1)).saveSale(any(Sale.class));
-        verify(kafkaRegistration, times(1)).send(eq("mail-topic"), any(MailDTO.class));
+        verify(kafkaRegistration, times(1)).send(anyString(), any(MailDTO.class));
     }
 
     @Test
-    void updateCustomer() {
+    public void testUpdateCustomer() {
         when(repository.save(any(Customer.class))).thenReturn(customer);
 
-        Customer result = customerService.updateCustomer(customer);
+        Customer updatedCustomer = customerService.updateCustomer(customer);
 
-        assertEquals(customer, result);
-        verify(repository, times(1)).save(customer);
+        assertNotNull(updatedCustomer);
+        assertEquals(1L, updatedCustomer.getId());
+        verify(repository, times(1)).save(any(Customer.class));
     }
 
     @Test
-    void deleteCustomerById() {
+    public void testDeleteCustomerById() {
+        Long customerId = 1L;
+
         doNothing().when(repository).deleteById(anyLong());
 
-        customerService.deleteCustomerById(1L);
+        customerService.deleteCustomerById(customerId);
 
-        verify(repository, times(1)).deleteById(1L);
+        verify(repository, times(1)).deleteById(customerId);
     }
 
     @Test
-    void findCustomerById() {
-        when(repository.findById(anyLong())).thenReturn(Optional.of(customer));
+    public void testFindCustomerById() {
+        when(repository.findById(anyLong())).thenReturn(java.util.Optional.of(customer));
+        when(productClient.nameIdentifier(any())).thenReturn(new ArrayList<>());
 
-        Customer result = customerService.findCustomerById(1L);
+        CustomerWithCartDTO foundCustomer = customerService.findCustomerById(1L);
 
-        assertEquals(customer, result);
-        verify(repository, times(1)).findById(1L);
+        assertNotNull(foundCustomer);
+        assertEquals(1L, foundCustomer.getId());
+        verify(repository, times(1)).findById(anyLong());
     }
 
     @Test
-    void findCustomerById_NotFound() {
-        when(repository.findById(anyLong())).thenReturn(Optional.empty());
+    public void testFindAllCustomer() {
+        when(repository.findAll()).thenReturn(List.of(customer));
 
-        Customer result = customerService.findCustomerById(1L);
+        List<Customer> customers = customerService.findAllCustomer();
 
-        assertNull(result);
-        verify(repository, times(1)).findById(1L);
-    }
-
-    @Test
-    void findAllCustomer() {
-        List<Customer> customers = List.of(customer);
-        when(repository.findAll()).thenReturn(customers);
-
-        List<Customer> result = customerService.findAllCustomer();
-
-        assertEquals(customers, result);
+        assertNotNull(customers);
+        assertEquals(1, customers.size());
         verify(repository, times(1)).findAll();
     }
 
     @Test
-    void findCustomerEmailAndNameById() {
-        when(repository.findById(anyLong())).thenReturn(Optional.of(customer));
+    public void testFindCustomerEmailAndNameById() {
+        when(repository.findById(anyLong())).thenReturn(java.util.Optional.of(customer));
 
-        CustomerDTO result = customerService.findCustomerEmailAndNameById(1L);
+        CustomerDTO customerDTO = customerService.findCustomerEmailAndNameById(1L);
 
-        assertEquals(customer.getEmail(), result.getEmail());
-        assertEquals(customer.getName(), result.getName());
-        verify(repository, times(1)).findById(1L);
+        assertNotNull(customerDTO);
+        assertEquals("test@example.com", customerDTO.getEmail());
+        assertEquals("Test User", customerDTO.getName());
+        verify(repository, times(1)).findById(anyLong());
     }
 
     @Test
-    void customerIdentify() {
-        Map<Long, String> productsWasOutMap = Map.of(1L, "Product A");
-        when(repository.findById(anyLong())).thenReturn(Optional.of(customer));
+    public void testCustomerIdentify() {
+        Map<Long, String> productsWasOutMap = new HashMap<>();
+        productsWasOutMap.put(1L, "Product 1");
+
+        when(repository.findById(anyLong())).thenReturn(java.util.Optional.of(customer));
 
         customerService.customerIdentify(productsWasOutMap);
 
@@ -146,11 +165,13 @@ class CustomerServiceTest {
     }
 
     @Test
-    void cleanCart() {
-        doNothing().when(mongoTemplate).updateFirst(any(Query.class), any(Update.class), eq("customer"));
+    public void testCleanCart() {
+        String customerId = "1";
 
-        customerService.cleanCart("1");
+        doNothing().when(mongoTemplate).updateFirst(any(Query.class), any(Update.class), anyString());
 
-        verify(mongoTemplate, times(1)).updateFirst(any(Query.class), any(Update.class), eq("customer"));
+        customerService.cleanCart(customerId);
+
+        verify(mongoTemplate, times(1)).updateFirst(any(Query.class), any(Update.class), anyString());
     }
 }

@@ -26,24 +26,23 @@ public class PurchaseService {
     private final KafkaTemplate<String, SaleDuplicateDTO> kafkaSale;
 
     @Transactional
-    public InventoryStatusDTO purchase(OrderWithProductCartDTO orderDuplicateDTO) {
-        log.info("Processing purchase for order: {}", orderDuplicateDTO);
+    public InventoryStatusDTO purchase(OrderWithProductCartDTO orderWithProductCartDTO) {
+        log.info("Processing purchase for order: {}", orderWithProductCartDTO);
         InventoryStatusDTO inventoryStatusDTO = new InventoryStatusDTO();
-//todo order withproductcartDTO and orderDuplicateDTO in all project
-        if (storageClient.isOrderInStorage(orderDuplicateDTO.getCart())) {
+
+        if (storageClient.isOrderInStorage(orderWithProductCartDTO.getCart())) {
             log.info("Order is in storage, sending to Kafka topic.");
-            kafkaAddOrder.send("order-topic", orderDuplicateDTO);
-            purchaseMailSend(orderDuplicateDTO);
-            customerClient.cleanCart(orderDuplicateDTO.getCustomerId());
+            kafkaAddOrder.send("order-topic", orderWithProductCartDTO);
+            purchaseMailSend(orderWithProductCartDTO);
+            customerClient.cleanCart(orderWithProductCartDTO.getCustomerId());
 
-
-            if (orderDuplicateDTO.getCost().compareTo(new BigDecimal("500.0")) > 0) {
+            if (orderWithProductCartDTO.getCost().compareTo(new BigDecimal("500.0")) > 0) {
                 SaleDuplicateDTO saleDuplicateDTO = SaleDuplicateDTO.builder()
                         .sale(new BigDecimal("0.05"))
-                        .customerId(orderDuplicateDTO.getCustomerId())
+                        .customerId(orderWithProductCartDTO.getCustomerId())
                         .build();
                 kafkaSale.send("sale-topic", saleDuplicateDTO);
-                log.info("Sale sent to Kafka for customerId {}: {}", orderDuplicateDTO.getCustomerId(), saleDuplicateDTO);
+                log.info("Sale sent to Kafka for customerId {}: {}", orderWithProductCartDTO.getCustomerId(), saleDuplicateDTO);
             }
             inventoryStatusDTO.setIsOrderInStorage(true);
             log.info("Inventory status updated: {}", inventoryStatusDTO);
@@ -51,27 +50,27 @@ public class PurchaseService {
         } else {
             log.warn("Order is not in storage, finding out of stock products.");
             Map<ProductDuplicateDTO, Integer> outOfStorage = storageClient.findOutOfStorageProduct(
-                    orderDuplicateDTO.getCart(), orderDuplicateDTO.getCustomerId());
+                    orderWithProductCartDTO.getCart(), orderWithProductCartDTO.getCustomerId());
             inventoryStatusDTO.setOutOfStorageProducts(outOfStorage);
             log.info("Out of storage products found: {}", outOfStorage);
         }
         return inventoryStatusDTO;
     }
 
-    public void purchaseMailSend(OrderWithProductCartDTO orderDuplicateDTO) {
-        log.info("Sending purchase email for order ID: {}", orderDuplicateDTO.getId());
-        Long customerId = orderDuplicateDTO.getCustomerId();
+    public void purchaseMailSend(OrderWithProductCartDTO orderWithProductCartDTO) {
+        log.info("Sending purchase email for order ID: {}", orderWithProductCartDTO.getId());
+        Long customerId = orderWithProductCartDTO.getCustomerId();
         CustomerDTO customerDTO = customerClient.findCustomerEmailAndNameById(customerId);
         List<String> listOfProducts = new ArrayList<>();
 
         Map<String, Object> data = Map.of(
-                "Cost", orderDuplicateDTO.getCost(),
-                "ID", orderDuplicateDTO.getId(),
+                "Cost", orderWithProductCartDTO.getCost(),
+                "ID", orderWithProductCartDTO.getId(),
                 "Products", listOfProducts,
                 "Name", customerDTO.getName()
         );
 
-        Map<ProductDuplicateDTO, Integer> cart = orderDuplicateDTO.getCart();
+        Map<ProductDuplicateDTO, Integer> cart = orderWithProductCartDTO.getCart();
 
         for (Map.Entry<ProductDuplicateDTO, Integer> entry : cart.entrySet()) {
             listOfProducts.add(entry.getKey().getName());
