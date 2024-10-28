@@ -120,7 +120,7 @@ public class ProductService {
                 .collect(Collectors.toMap(ProductDuplicateDTO::getId, entity -> entity));
         List<ProductDuplicateDTO> result = listId.stream()
                 .map(entityMap::get)
-                .toList();
+                .collect(Collectors.toList());
         log.info("Identified names for products: {}", result);
         return result;
     }

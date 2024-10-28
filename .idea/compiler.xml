@@ -7,11 +7,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="customer-service" />
         <module name="purchase-service" />
         <module name="product-service" />
         <module name="ByteMall" />
         <module name="storage-service" />
+        <module name="customer-service" />
         <module name="notification-service" />
       </profile>
     </annotationProcessing>
@@ -27,7 +27,7 @@
       <module name="customer-service" options="-parameters" />
       <module name="main-service" options="-parameters" />
       <module name="notification-service" options="-parameters" />
-      <module name="product-service" options="-parameters" />
+      <module name="product-service" options="" />
       <module name="purchase-service" options="-parameters" />
       <module name="storage-service" options="-parameters" />
     </option>

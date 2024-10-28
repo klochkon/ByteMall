@@ -18,7 +18,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/Product
     password: klochko_08
     username: postgres
-    driver-class-name: org.postgresql.Driver
 
   cache:
     type: redis

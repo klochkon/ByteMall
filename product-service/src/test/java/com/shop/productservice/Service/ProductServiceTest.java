@@ -54,7 +54,7 @@ class ProductServiceTest {
                 .id(1L)
                 .name("Test Product")
                 .category("Electronics")
-                .cost(new BigDecimal(100.0))
+                .cost(new BigDecimal("100.0"))
                 .description("Test Description")
                 .build();
 

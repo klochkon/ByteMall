@@ -27,9 +27,8 @@ spring:
       port: 6379
 
     mongodb:
-      host: localhost
-      port: 27017
       database: Customer
+      uri: mongodb://localhost:27017/Customer
 
 
 url:

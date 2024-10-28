@@ -1,11 +1,11 @@
 package com.shop.customerservice.Service;
 
-import com.shop.customerservice.Client.NotificationClient;
-import com.shop.customerservice.Client.ProductClient;
+import com.shop.customerservice.client.NotificationClient;
+import com.shop.customerservice.client.ProductClient;
 import com.shop.customerservice.DTO.CustomerDTO;
 import com.shop.customerservice.DTO.CustomerWithCartDTO;
 import com.shop.customerservice.DTO.MailDTO;
-import com.shop.customerservice.DTO.ProductDuplicateDTO;
+import com.shop.customerservice.Enums.Gender;
 import com.shop.customerservice.Model.Customer;
 import com.shop.customerservice.Model.Sale;
 import com.shop.customerservice.Repository.CustomerRepository;
@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -54,7 +55,6 @@ public class CustomerServiceTest {
     private SaleService saleService;
 
     private Customer customer;
-    private CustomerWithCartDTO customerWithCartDTO;
     private Sale sale;
 
     @BeforeEach
@@ -66,18 +66,17 @@ public class CustomerServiceTest {
                 .email("test@example.com")
                 .name("Test User")
                 .cart(new HashMap<>())
+                .gender(Gender.OTHER)
+                .newsLetterSubscribe(true)
+                .surname("surname")
+                .phoneNumber("123")
+                .nickName("nickname")
                 .build();
 
         sale = Sale.builder()
+                .id(1L)
                 .customerId(customer.getId())
                 .sale(new BigDecimal("0.1"))
-                .build();
-
-        customerWithCartDTO = CustomerWithCartDTO.builder()
-                .id(customer.getId())
-                .name(customer.getName())
-                .email(customer.getEmail())
-                .cart(new HashMap<>())
                 .build();
     }
 
@@ -166,12 +165,14 @@ public class CustomerServiceTest {
 
     @Test
     public void testCleanCart() {
-        String customerId = "1";
+        String customerId = "12345";
+        Query expectedQuery = new Query(Criteria.where("id").is(customerId));
+        Update expectedUpdate = new Update().set("cart", Map.of());
 
-        doNothing().when(mongoTemplate).updateFirst(any(Query.class), any(Update.class), anyString());
 
         customerService.cleanCart(customerId);
 
-        verify(mongoTemplate, times(1)).updateFirst(any(Query.class), any(Update.class), anyString());
+
+        verify(mongoTemplate).updateFirst(eq(expectedQuery), eq(expectedUpdate), eq("customer"));
     }
 }

@@ -1,6 +1,9 @@
 package com.shop.customerservice.DTO;
 
 
+import com.shop.customerservice.Enums.Gender;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +33,8 @@ public class CustomerWithCartDTO {
 
     private String surname;
 
-    private String sex;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     private LocalDate dateOfBirth;
 

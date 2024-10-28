@@ -1,5 +1,8 @@
 package com.shop.customerservice.Model;
 
+import com.shop.customerservice.Enums.Gender;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -33,7 +36,8 @@ public class Customer {
     @NotBlank(message = "Surname can`t be blank")
     private String surname;
 
-    private String sex;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     private LocalDate dateOfBirth;
 

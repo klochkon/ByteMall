@@ -1,7 +1,7 @@
 package com.shop.customerservice.Service;
 
-import com.shop.customerservice.Client.NotificationClient;
-import com.shop.customerservice.Client.ProductClient;
+import com.shop.customerservice.client.NotificationClient;
+import com.shop.customerservice.client.ProductClient;
 import com.shop.customerservice.DTO.CustomerDTO;
 import com.shop.customerservice.DTO.CustomerWithCartDTO;
 import com.shop.customerservice.DTO.MailDTO;
@@ -108,7 +108,7 @@ public class CustomerService {
             CustomerWithCartDTO customerWithCartDTO = CustomerWithCartDTO.builder()
                     .name(customer.getName())
                     .email(customer.getEmail())
-                    .sex(customer.getSex())
+                    .gender(customer.getGender())
                     .dateOfBirth(customer.getDateOfBirth())
                     .newsLetterSubscribe(customer.getNewsLetterSubscribe())
                     .surname(customer.getName())

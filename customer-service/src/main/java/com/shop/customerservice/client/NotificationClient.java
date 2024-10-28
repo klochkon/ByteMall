@@ -1,4 +1,4 @@
-package com.shop.customerservice.Client;
+package com.shop.customerservice.client;
 
 import com.shop.customerservice.DTO.MailDTO;
 import org.springframework.cloud.openfeign.FeignClient;

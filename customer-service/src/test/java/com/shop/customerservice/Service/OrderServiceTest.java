@@ -1,6 +1,6 @@
 package com.shop.customerservice.Service;
 
-import com.shop.customerservice.Client.ProductClient;
+import com.shop.customerservice.client.ProductClient;
 import com.shop.customerservice.DTO.OrderWithProductCartDTO;
 import com.shop.customerservice.Model.Order;
 import com.shop.customerservice.Repository.OrderRepository;
@@ -41,14 +41,14 @@ public class OrderServiceTest {
         orderDto = OrderWithProductCartDTO.builder()
                 .id(1L)
                 .customerId(1L)
-                .cost(new BigDecimal(100.0))
+                .cost(new BigDecimal("100.0"))
                 .cart(new HashMap<>())
                 .build();
 //todo tests but controll making objects, give entities to chat
         order = Order.builder()
                 .id(1L)
                 .customerId(1L)
-                .cost(new BigDecimal(100.0))
+                .cost(new BigDecimal("100.0"))
                 .cart(new HashMap<>())
                 .build();
     }

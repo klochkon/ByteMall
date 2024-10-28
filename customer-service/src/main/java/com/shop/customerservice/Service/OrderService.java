@@ -1,6 +1,6 @@
 package com.shop.customerservice.Service;
 
-import com.shop.customerservice.Client.ProductClient;
+import com.shop.customerservice.client.ProductClient;
 import com.shop.customerservice.DTO.OrderDuplicateDTO;
 import com.shop.customerservice.DTO.OrderWithProductCartDTO;
 import com.shop.customerservice.DTO.ProductDuplicateDTO;
