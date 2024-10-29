@@ -1,7 +1,5 @@
 package com.shop.storageservice.service;
 
-
-
 import com.shop.storageservice.client.CustomerClient;
 import com.shop.storageservice.client.ProductClient;
 import com.shop.storageservice.dto.OrderWithProductCartDTO;
@@ -11,11 +9,14 @@ import com.shop.storageservice.dto.StorageDuplicateDTO;
 import com.shop.storageservice.model.Storage;
 import com.shop.storageservice.repository.StorageRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class StorageServiceTest {
 
     @Mock
@@ -53,7 +55,6 @@ class StorageServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         productDuplicateDTO = ProductDuplicateDTO.builder()
                 .id(1L)
                 .name("Test Product")
@@ -63,6 +64,8 @@ class StorageServiceTest {
                 .category("Test Category")
                 .feedBack(new BigDecimal("4.5"))
                 .build();
+
+
 
         storage = Storage.builder()
                 .productId(1L)
@@ -169,15 +172,27 @@ class StorageServiceTest {
     void reduceQuantityById() {
         OrderWithProductCartDTO orderDuplicateDTO = new OrderWithProductCartDTO();
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
-        cart.put(productDuplicateDTO, 3);
+        cart.put(productDuplicateDTO, 1);
+        ProductDuplicateDTO productDuplicateDTO2 = ProductDuplicateDTO.builder()
+                .id(2L)
+                .name("Test Product2")
+                .description("Test Description2")
+                .cost(new BigDecimal("9.99"))
+                .producer("Test Producer2")
+                .category("Test Category2")
+                .feedBack(new BigDecimal("4.5"))
+                .build();
+        cart.put(productDuplicateDTO2, 2);
         orderDuplicateDTO.setCart(cart);
 
 
-
-        when(entityManager.findById(productDuplicateDTO.getId())).thenReturn(Optional.of(storage));
+        Query queryMock = mock(Query.class);
+        when(entityManager.createNativeQuery(anyString())).thenReturn(queryMock);
+        when(queryMock.executeUpdate()).thenReturn(1);
 
         service.reduceQuantityById(orderDuplicateDTO);
 
-        verify(entityManager, times(1)).deleteById(productDuplicateDTO.getId());
+        verify(entityManager, times(2)).createNativeQuery(anyString());
+        verify(queryMock, times(2)).executeUpdate();
     }
 }

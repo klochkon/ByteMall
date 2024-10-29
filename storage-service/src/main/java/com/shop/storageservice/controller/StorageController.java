@@ -54,7 +54,7 @@ public class StorageController {
 
     @DeleteMapping("delete")
     public void deleteById(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
-        service.deleteProductById(orderDuplicateDTO);
+        service.reduceQuantityById(orderDuplicateDTO);
     }
 
     @GetMapping("check/order")
