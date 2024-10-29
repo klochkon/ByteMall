@@ -8,11 +8,11 @@ import com.shop.productservice.model.Product;
 import com.shop.productservice.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.cache.CacheManager;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
     @InjectMocks
@@ -41,15 +43,12 @@ class ProductServiceTest {
     @Mock
     private KafkaTemplate<String, MailDTO> kafkaTemplate;
 
-    @Mock
-    private CacheManager cacheManager;
-
     private Product product;
     private MultipartFile photo;
 
+
     @BeforeEach
     void setUp() throws IOException {
-        MockitoAnnotations.openMocks(this);
         product = Product.builder()
                 .id(1L)
                 .name("Test Product")
@@ -58,18 +57,24 @@ class ProductServiceTest {
                 .description("Test Description")
                 .build();
 
+
         photo = new MockMultipartFile("photo", "test.jpg", "image/jpeg", new ByteArrayInputStream("test".getBytes()));
     }
 
     @Test
     void createProduct() throws IOException {
+        URL someURL = new URL("http://example.com");
         when(repository.save(any(Product.class))).thenReturn(product);
+        productService.setBucketName("BucketName");
+        when(amazonS3.getUrl(anyString(), anyString())).thenReturn(someURL);
+
 
         Product savedProduct = productService.createProduct(product, photo);
 
+        assertEquals(product.getImageUrl(), "http://example.com");
         assertNotNull(savedProduct);
         assertEquals(product.getId(), savedProduct.getId());
-        verify(amazonS3).putObject(anyString(), anyString(), any(), isNull());
+        verify(amazonS3, times(1)).putObject(anyString(), anyString(), any(), isNull());
     }
 
     @Test

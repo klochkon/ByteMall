@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.shop.productservice.dto.*;
 import com.shop.productservice.model.Product;
 import com.shop.productservice.repository.ProductRepository;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Data
 @Slf4j
 public class ProductService {
 

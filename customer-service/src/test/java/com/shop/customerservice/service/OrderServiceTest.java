@@ -6,9 +6,10 @@ import com.shop.customerservice.model.Order;
 import com.shop.customerservice.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
 
     @InjectMocks
@@ -36,7 +38,6 @@ public class OrderServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
 
         orderDto = OrderWithProductCartDTO.builder()
                 .id(1L)
@@ -44,7 +45,7 @@ public class OrderServiceTest {
                 .cost(new BigDecimal("100.0"))
                 .cart(new HashMap<>())
                 .build();
-//todo tests but controll making objects, give entities to chat
+
         order = Order.builder()
                 .id(1L)
                 .customerId(1L)

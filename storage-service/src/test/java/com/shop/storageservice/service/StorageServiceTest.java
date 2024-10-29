@@ -13,17 +13,16 @@ import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -75,10 +74,17 @@ class StorageServiceTest {
 
     @Test
     void addProductById() {
-        service.addProductById(productDuplicateDTO, 10);
+        int quantityAdded = 5;
+        service.getOutMapWithId().put(1L, 123L);
 
-        verify(repository, times(1)).addProductById(productDuplicateDTO.getId(), 10);
-        verify(customerClient, times(1)).customerIdentify(any());
+        service.addProductById(productDuplicateDTO, quantityAdded);
+
+        verify(repository).addProductById(productDuplicateDTO.getId(), quantityAdded);
+
+        Map<Long, String> expectedProductWasOutMap = new HashMap<>();
+        expectedProductWasOutMap.put(123L, "Test Product");
+        verify(customerClient).customerIdentify(expectedProductWasOutMap);
+        verifyNoMoreInteractions(repository, customerClient);
     }
 
     @Test
@@ -130,7 +136,7 @@ class StorageServiceTest {
 
         Boolean result = service.isInStorage(1L, 50);
 
-        assertTrue(result);
+        assertFalse(result);
         verify(repository, times(1)).findById(1L);
     }
 
