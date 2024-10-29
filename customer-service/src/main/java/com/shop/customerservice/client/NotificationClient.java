@@ -1,6 +1,6 @@
 package com.shop.customerservice.client;
 
-import com.shop.customerservice.DTO.MailDTO;
+import com.shop.customerservice.dto.MailDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
