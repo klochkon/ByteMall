@@ -93,29 +93,37 @@ public class ProductService {
 
     @CachePut(value = {"allProduct", "product"}, key = "#product.id")
     public Product createProduct(Product product, List<MultipartFile> photos) throws IOException {
-        log.info("Creating product: {}", product);
+        log.info("Creating product with ID: {}, Name: {}", product.getId(), product.getName());
         List<ImageURL> urls = new ArrayList<>();
         Integer numberOfIterations = 0;
+
         for (MultipartFile photo : photos) {
             numberOfIterations++;
             StringBuilder photoName = new StringBuilder();
             photoName.append(product.getName());
             photoName.append("_");
             photoName.append(numberOfIterations);
+
             amazonS3.putObject(bucketName, photoName.toString(), photo.getInputStream(), null);
+
             ImageURL url = ImageURL.builder()
                     .product(product)
                     .ImageURL(amazonS3.getUrl(bucketName, photoName.toString()))
                     .build();
+
             urlRepository.save(url);
             urls.add(url);
         }
+
         product.setImageUrl(urls);
-        log.info("Product photo with name: {} put in bucket", product.getName());
+        log.info("Product photo(s) for '{}' uploaded to bucket: {}", product.getName(), urls.size());
+
         Product savedProduct = productRepository.save(product);
-        log.info("Product created successfully: {}", savedProduct);
+        log.info("Product created successfully with ID: {}, Name: {}", savedProduct.getId(), savedProduct.getName());
+
         return savedProduct;
     }
+
 
     public List<ProductDuplicateDTO> nameIdentifier(List<Long> listId) {
         log.info("Identifying names for product IDs: {}", listId);
@@ -207,11 +215,15 @@ public class ProductService {
 
     @CachePut(value = {"product", "allProduct"}, key = "#product.id")
     public Product updateProduct(Product product, List<MultipartFile> photos) throws IOException {
-        log.info("Updating product: {}", product);
+        log.info("Updating product with ID: {}, Name: {}", product.getId(), product.getName());
+
         Product updatedProduct = this.createProduct(product, photos);
-        log.info("Product updated successfully: {}", updatedProduct);
+
+        log.info("Product updated successfully with ID: {}, Name: {}", updatedProduct.getId(), updatedProduct.getName());
+
         return updatedProduct;
     }
+
 
     @Cacheable(value = "allProduct", key = "#category")
     public List<Product> findAllByCategory(String category) {

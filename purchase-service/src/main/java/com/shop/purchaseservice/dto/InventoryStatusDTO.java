@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class InventoryStatusDTO {
 
-    private Boolean isOrderInStorage;
+    public Boolean isOrderInStorage;
     private Map<ProductDuplicateDTO, Integer> outOfStorageProducts;
 
 

@@ -1,10 +1,13 @@
 package com.shop.productservice.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.shop.productservice.dto.MailDTO;
 import com.shop.productservice.dto.ProductWithQuantityDTO;
 import com.shop.productservice.dto.StorageDuplicateDTO;
+import com.shop.productservice.model.ImageURL;
 import com.shop.productservice.model.Product;
+import com.shop.productservice.repository.ImageURLRepository;
 import com.shop.productservice.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +39,10 @@ class ProductServiceTest {
     private ProductService productService;
 
     @Mock
-    private ProductRepository repository;
+    private ProductRepository productRepository;
+
+    @Mock
+    private ImageURLRepository urlRepository;
 
     @Mock
     private AmazonS3 amazonS3;
@@ -49,14 +55,23 @@ class ProductServiceTest {
 
     @BeforeEach
     void setUp() throws IOException {
+
+        List<ImageURL> urls = new ArrayList<>();
+        ImageURL imageURL = ImageURL.builder()
+                .id(1L)
+                .ImageURL(new URL("http://test.com"))
+                .build();
+        urls.add(imageURL);
         product = Product.builder()
                 .id(1L)
                 .name("Test Product")
                 .category("Electronics")
                 .cost(new BigDecimal("100.0"))
                 .description("Test Description")
-
+                .imageUrl(urls)
                 .build();
+
+        productService.setBucketName("bucketName");
 
         photos = new ArrayList<>();
         photos.add(new MockMultipartFile("photo1", "photo1.jpg", "image/jpeg", new ByteArrayInputStream("content1".getBytes())));
@@ -65,23 +80,26 @@ class ProductServiceTest {
     }
 
     @Test
-    void createProduct() throws IOException {
-        List<URL> someURL = List.of(new URL("http://example.com"), new URL("http://example2.com"));
-        when(repository.save(any(Product.class))).thenReturn(product);
-        productService.setBucketName("BucketName");
-        when(amazonS3.getUrl(anyString(), anyString())).thenReturn(someURL);
+    void createProductTest() throws IOException {
+
+
+        doReturn(new URL("http://mock-s3-url.com/photo1.jpg")).when(amazonS3).getUrl(anyString(), anyString());
+
+        when(productRepository.save(any(Product.class))).thenReturn(product);
 
         Product savedProduct = productService.createProduct(product, photos);
 
-        assertEquals(product.getImageUrl(), "http://example.com");
-        assertNotNull(savedProduct);
-        assertEquals(product.getId(), savedProduct.getId());
-        verify(amazonS3, times(1)).putObject(anyString(), anyString(), any(), isNull());
+        verify(amazonS3, times(photos.size())).putObject(anyString(), anyString(), any(), any());
+        verify(urlRepository, times(photos.size())).save(any(ImageURL.class));
+        verify(productRepository).save(product);
+
+        assertEquals(photos.size(), savedProduct.getImageUrl().size());
+        assertEquals("Test Product", savedProduct.getName());
     }
 
     @Test
     void findById() {
-        when(repository.findById(1L)).thenReturn(java.util.Optional.of(product));
+        when(productRepository.findById(1L)).thenReturn(java.util.Optional.of(product));
 
         Product foundProduct = productService.findById(1L);
 
@@ -91,17 +109,17 @@ class ProductServiceTest {
 
     @Test
     void deleteById() {
-        when(repository.findById(1L)).thenReturn(java.util.Optional.of(product));
+        when(productRepository.findById(1L)).thenReturn(java.util.Optional.of(product));
 
         productService.deleteById(1L);
 
         verify(amazonS3).deleteObject(anyString(), anyString());
-        verify(repository).deleteById(1L);
+        verify(productRepository).deleteById(1L);
     }
 
     @Test
     void getAllProductWithQuantity() {
-        when(repository.findAll()).thenReturn(Collections.singletonList(product));
+        when(productRepository.findAll()).thenReturn(Collections.singletonList(product));
 
         List<ProductWithQuantityDTO> result = productService.getAllProductWithQuantity(Collections.emptyList());
 
@@ -125,12 +143,12 @@ class ProductServiceTest {
 
     @Test
     void updateProduct() throws IOException {
-        when(repository.save(any(Product.class))).thenReturn(product);
+        when(productRepository.save(any(Product.class))).thenReturn(product);
 
         Product updatedProduct = productService.updateProduct(product, photos);
 
         assertNotNull(updatedProduct);
         assertEquals(product.getId(), updatedProduct.getId());
-        verify(amazonS3).putObject(anyString(), anyString(), any(), isNull());
+        verify(amazonS3, times(3)).putObject(anyString(), anyString(), any(), isNull());
     }
 }
