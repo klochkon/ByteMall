@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ import java.util.Map;
 public class Customer {
 
     @Id
-    private Long id;
+    private ObjectId id;
 
     private String email;
 
@@ -36,12 +37,10 @@ public class Customer {
     @NotBlank(message = "Surname can`t be blank")
     private String surname;
 
-    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     private LocalDate dateOfBirth;
 
-//    todo all places where in db dto do id and nameIdentifier
     private Map<Long, Integer> cart;
 
     private Boolean newsLetterSubscribe;

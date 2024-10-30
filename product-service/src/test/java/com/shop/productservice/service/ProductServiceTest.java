@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,8 +45,7 @@ class ProductServiceTest {
     private KafkaTemplate<String, MailDTO> kafkaTemplate;
 
     private Product product;
-    private MultipartFile photo;
-
+    private List<MultipartFile> photos;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -55,21 +55,23 @@ class ProductServiceTest {
                 .category("Electronics")
                 .cost(new BigDecimal("100.0"))
                 .description("Test Description")
+
                 .build();
 
-
-        photo = new MockMultipartFile("photo", "test.jpg", "image/jpeg", new ByteArrayInputStream("test".getBytes()));
+        photos = new ArrayList<>();
+        photos.add(new MockMultipartFile("photo1", "photo1.jpg", "image/jpeg", new ByteArrayInputStream("content1".getBytes())));
+        photos.add(new MockMultipartFile("photo2", "photo2.jpg", "image/jpeg", new ByteArrayInputStream("content2".getBytes())));
+        photos.add(new MockMultipartFile("photo3", "photo3.jpg", "image/jpeg", new ByteArrayInputStream("content3".getBytes())));
     }
 
     @Test
     void createProduct() throws IOException {
-        URL someURL = new URL("http://example.com");
+        List<URL> someURL = List.of(new URL("http://example.com"), new URL("http://example2.com"));
         when(repository.save(any(Product.class))).thenReturn(product);
         productService.setBucketName("BucketName");
         when(amazonS3.getUrl(anyString(), anyString())).thenReturn(someURL);
 
-
-        Product savedProduct = productService.createProduct(product, photo);
+        Product savedProduct = productService.createProduct(product, photos);
 
         assertEquals(product.getImageUrl(), "http://example.com");
         assertNotNull(savedProduct);
@@ -125,21 +127,10 @@ class ProductServiceTest {
     void updateProduct() throws IOException {
         when(repository.save(any(Product.class))).thenReturn(product);
 
-        Product updatedProduct = productService.updateProduct(product, photo);
+        Product updatedProduct = productService.updateProduct(product, photos);
 
         assertNotNull(updatedProduct);
         assertEquals(product.getId(), updatedProduct.getId());
         verify(amazonS3).putObject(anyString(), anyString(), any(), isNull());
-    }
-
-    @Test
-    void findAllByCategory() {
-        when(repository.findAllByCategory("Electronics")).thenReturn(Collections.singletonList(product));
-
-        List<Product> products = productService.findAllByCategory("Electronics");
-
-        assertNotNull(products);
-        assertEquals(1, products.size());
-        assertEquals(product.getId(), products.get(0).getId());
     }
 }

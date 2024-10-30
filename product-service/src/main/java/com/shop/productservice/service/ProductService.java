@@ -2,7 +2,9 @@ package com.shop.productservice.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.shop.productservice.dto.*;
+import com.shop.productservice.model.ImageURL;
 import com.shop.productservice.model.Product;
+import com.shop.productservice.repository.ImageURLRepository;
 import com.shop.productservice.repository.ProductRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProductService {
 
-    private final ProductRepository repository;
+    private final ProductRepository productRepository;
+    private final ImageURLRepository urlRepository;
     private final AmazonS3 amazonS3;
 
     @Value("${aws.s3.bucket-name}")
@@ -39,7 +42,7 @@ public class ProductService {
     @Cacheable(value = "productWithQuantity")
     public List<ProductWithQuantityDTO> getAllProductWithQuantity(List<StorageDuplicateDTO> storageList) {
         log.info("Fetching all products with quantity.");
-        List<Product> products = repository.findAll();
+        List<Product> products = productRepository.findAll();
         List<ProductWithQuantityDTO> resultList = new ArrayList<>();
 
         Map<Long, Integer> storageMap = new HashMap<>();
@@ -57,6 +60,7 @@ public class ProductService {
                     .description(product.getDescription())
                     .feedBack(product.getFeedBack())
                     .producer(product.getProducer())
+                    .imageURLS(product.getImageUrl())
                     .build();
             resultList.add(productWithQuantityDTO);
         }
@@ -69,7 +73,7 @@ public class ProductService {
         log.info("Received products with lack for verification: {}", productsWithLack);
         MailDTO mailDTO = new MailDTO();
         Map<String, Object> data = new HashMap<>();
-        List<Product> products = repository.findAll();
+        List<Product> products = productRepository.findAll();
 
         Map<Long, String> productMap = new HashMap<>();
         for (Product product : products) {
@@ -88,24 +92,37 @@ public class ProductService {
     }
 
     @CachePut(value = {"allProduct", "product"}, key = "#product.id")
-    public Product createProduct(Product product, MultipartFile photo) throws IOException {
+    public Product createProduct(Product product, List<MultipartFile> photos) throws IOException {
         log.info("Creating product: {}", product);
-        amazonS3.putObject(bucketName, product.getName(), photo.getInputStream(), null);
+        List<ImageURL> urls = new ArrayList<>();
+        Integer numberOfIterations = 0;
+        for (MultipartFile photo : photos) {
+            numberOfIterations++;
+            StringBuilder photoName = new StringBuilder();
+            photoName.append(product.getName());
+            photoName.append("_");
+            photoName.append(numberOfIterations);
+            amazonS3.putObject(bucketName, photoName.toString(), photo.getInputStream(), null);
+            ImageURL url = ImageURL.builder()
+                    .product(product)
+                    .ImageURL(amazonS3.getUrl(bucketName, photoName.toString()))
+                    .build();
+            urlRepository.save(url);
+            urls.add(url);
+        }
+        product.setImageUrl(urls);
         log.info("Product photo with name: {} put in bucket", product.getName());
-        String objectUrl = amazonS3.getUrl(bucketName, product.getName()).toString();
-        product.setImageUrl(objectUrl);
-        Product savedProduct = repository.save(product);
+        Product savedProduct = productRepository.save(product);
         log.info("Product created successfully: {}", savedProduct);
         return savedProduct;
     }
 
     public List<ProductDuplicateDTO> nameIdentifier(List<Long> listId) {
         log.info("Identifying names for product IDs: {}", listId);
-        List<Product> productsList = repository.findAllById(listId);
+        List<Product> productsList = productRepository.findAllById(listId);
         List<ProductDuplicateDTO> dtoList = new ArrayList<>();
         for (Product product : productsList) {
-            ProductDuplicateDTO duplicate;
-            duplicate = ProductDuplicateDTO.builder()
+            ProductDuplicateDTO duplicate = ProductDuplicateDTO.builder()
                     .id(product.getId())
                     .category(product.getCategory())
                     .cost(product.getCost())
@@ -142,8 +159,7 @@ public class ProductService {
             for (ProductDuplicateDTO product : listProducts) {
                 cartWithProduct.put(product, listQuantity.remove(0));
             }
-            OrderWithProductCartDTO orderWithProductCartDTO;
-            orderWithProductCartDTO = OrderWithProductCartDTO.builder()
+            OrderWithProductCartDTO orderWithProductCartDTO = OrderWithProductCartDTO.builder()
                     .customerId(orderDuplicateDTO.getCustomerId())
                     .id(orderDuplicateDTO.getId())
                     .cost(orderDuplicateDTO.getCost())
@@ -158,17 +174,25 @@ public class ProductService {
     @CacheEvict(value = {"product", "allProduct"}, key = "#id")
     public void deleteById(Long id) {
         log.info("Deleting product by ID: {}", id);
-        Product product = repository.findById(id).orElse(null);
-        amazonS3.deleteObject(bucketName, product.getName());
+        Product product = productRepository.findById(id).orElse(null);
+        Integer numberOfIterations = 0;
+        for (ImageURL url : product.getImageUrl()) {
+            numberOfIterations++;
+            StringBuilder photoName = new StringBuilder();
+            photoName.append(product.getName());
+            photoName.append("_");
+            photoName.append(numberOfIterations);
+            amazonS3.deleteObject(bucketName, photoName.toString());
+        }
         log.info("Product photo with name: {} deleted from bucket", product.getName());
-        repository.deleteById(id);
+        productRepository.deleteById(id);
         log.info("Product with id {} deleted successfully", id);
     }
 
     @Cacheable(value = "product", key = "#id")
     public Product findById(Long id) {
         log.info("Finding product by ID: {}", id);
-        Product product = repository.findById(id).orElse(null);
+        Product product = productRepository.findById(id).orElse(null);
         log.info("Product found: {}", product);
         return product;
     }
@@ -176,15 +200,15 @@ public class ProductService {
     @Cacheable(value = "product", key = "#slug")
     public Product findBySlug(String slug) {
         log.info("Finding product by slug: {}", slug);
-        Product product = repository.findProductBySlug(slug);
+        Product product = productRepository.findProductBySlug(slug);
         log.info("Product found by slug '{}': {}", slug, product);
         return product;
     }
 
     @CachePut(value = {"product", "allProduct"}, key = "#product.id")
-    public Product updateProduct(Product product, MultipartFile photo) throws IOException {
+    public Product updateProduct(Product product, List<MultipartFile> photos) throws IOException {
         log.info("Updating product: {}", product);
-        Product updatedProduct = this.createProduct(product, photo);
+        Product updatedProduct = this.createProduct(product, photos);
         log.info("Product updated successfully: {}", updatedProduct);
         return updatedProduct;
     }
@@ -192,7 +216,7 @@ public class ProductService {
     @Cacheable(value = "allProduct", key = "#category")
     public List<Product> findAllByCategory(String category) {
         log.info("Finding all products by category: {}", category);
-        List<Product> products = repository.findAllByCategory(category);
+        List<Product> products = productRepository.findAllByCategory(category);
         log.info("Found {} products in category '{}'", products.size(), category);
         return products;
     }

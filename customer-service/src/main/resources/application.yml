@@ -27,8 +27,9 @@ spring:
       port: 6379
 
     mongodb:
-      database: Customer
-      uri: mongodb://localhost:27017/Customer
+      database: ByteMall
+      uri: mongodb://localhost:27017/ByteMall
+      auto-index-creation: true
 
 
 url:

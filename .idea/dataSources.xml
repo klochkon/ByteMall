@@ -26,11 +26,11 @@
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="Customer" uuid="010da98e-5cb5-46bf-9d3f-b21c9217b117">
+    <data-source source="LOCAL" name="ByteMall@localhost" uuid="c1734b36-4782-4120-97fd-f6c827825123">
       <driver-ref>mongo</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.dbschema.MongoJdbcDriver</jdbc-driver>
-      <jdbc-url>mongodb://localhost:27017/customer</jdbc-url>
+      <jdbc-url>mongodb://localhost:27017/ByteMall</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />

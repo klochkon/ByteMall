@@ -1,11 +1,13 @@
 package com.shop.productservice.dto;
 
+import com.shop.productservice.model.ImageURL;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 @Data
@@ -23,7 +25,7 @@ public class ProductDuplicateDTO {
     private String category;
 
     private BigDecimal feedBack;
-    private String imageUrl;
+    private List<ImageURL> imageUrl;
     private String slug;
 
 }

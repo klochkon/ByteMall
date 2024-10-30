@@ -1,11 +1,13 @@
 package com.shop.productservice.dto;
 
+import com.shop.productservice.model.ImageURL;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,4 +26,6 @@ public class ProductWithQuantityDTO {
     private BigDecimal feedBack;
 
     private Integer quantity;
+
+    private List<ImageURL> imageURLS;
 }

@@ -30,16 +30,16 @@ public class ProductController {
 
     @PostMapping("create")
     public Product createProduct(@RequestBody Product product,
-                                 @RequestParam MultipartFile photo) throws IOException {
-        return service.createProduct(product, photo);
+                                 @RequestBody List<MultipartFile> photos) throws IOException {
+        return service.createProduct(product, photos);
     }
 
 
 
     @PutMapping("update")
     public Product updateProduct(@RequestBody Product product,
-                                 @RequestParam MultipartFile photo) throws IOException {
-        return service.updateProduct(product, photo);
+                                 @RequestBody List<MultipartFile> photos) throws IOException {
+        return service.updateProduct(product, photos);
     }
 
     @DeleteMapping("delete/{id}")
