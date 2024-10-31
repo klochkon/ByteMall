@@ -53,6 +53,7 @@ public class PurchaseService {
             log.warn("Order is not in storage, finding out of stock products.");
             Map<ProductDuplicateDTO, Integer> outOfStorage = storageClient.findOutOfStorageProduct(
                     orderWithProductCartDTO.getCart(), orderWithProductCartDTO.getCustomerId());
+            inventoryStatusDTO.setIsOrderInStorage(false);
             inventoryStatusDTO.setOutOfStorageProducts(outOfStorage);
             log.info("Out of storage products found: {}", outOfStorage);
         }
