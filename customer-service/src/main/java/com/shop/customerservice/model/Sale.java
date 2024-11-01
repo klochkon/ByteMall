@@ -19,6 +19,6 @@ public class Sale {
 
     @Id
     private ObjectId id;
-    private Long customerId;
+    private String customerId;
     private BigDecimal sale;
 }

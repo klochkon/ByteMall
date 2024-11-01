@@ -5,6 +5,7 @@ import com.shop.customerservice.model.Sale;
 import com.shop.customerservice.repository.SaleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -39,7 +40,7 @@ public class SaleService {
     public Sale saveSaleDTO(SaleDuplicateDTO saleDuplicateDTO) {
         log.info("Received sale dto for saving: {}", saleDuplicateDTO);
         Sale sale = Sale.builder()
-                .id(saleDuplicateDTO.getId())
+                .id(new ObjectId(saleDuplicateDTO.getId()))
                 .sale(saleDuplicateDTO.getSale())
                 .customerId(saleDuplicateDTO.getCustomerId())
                 .build();

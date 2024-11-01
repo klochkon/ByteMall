@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Builder
 public class SaleDuplicateDTO {
 
-    private Long id;
-    private Long customerId;
+    private String id;
+    private String customerId;
     private BigDecimal sale;
 }

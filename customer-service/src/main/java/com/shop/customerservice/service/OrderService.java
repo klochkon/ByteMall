@@ -8,6 +8,7 @@ import com.shop.customerservice.model.Order;
 import com.shop.customerservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -35,7 +36,7 @@ public class OrderService {
             cartWithId.put(entry.getKey().getId(), entry.getValue());
         }
         Order order = Order.builder()
-                .id(orderDuplicateDTO.getId())
+                .id(new ObjectId(orderDuplicateDTO.getId()))
                 .cart(cartWithId)
                 .customerId(orderDuplicateDTO.getCustomerId())
                 .cost(orderDuplicateDTO.getCost())
@@ -55,16 +56,16 @@ public class OrderService {
     }
 
     @CacheEvict(value = {"order", "allOrders"}, key = "#id")
-    public void deleteOrderById(Long id) {
+    public void deleteOrderById(String id) {
         log.info("Deleting order with id: {}", id);
-        repository.deleteById(id);
+        repository.deleteById(new ObjectId(id));
         log.info("Order with id {} deleted successfully", id);
     }
 
     @Cacheable(value = "order", key = "#id")
-    public OrderWithProductCartDTO findOrderById(Long id) {
+    public OrderWithProductCartDTO findOrderById(String id) {
         log.info("Finding order by id: {}", id);
-        Order order = repository.findById(id).orElse(null);
+        Order order = repository.findById(new ObjectId(id)).orElse(null);
         log.info("Order found: {}", order);
 
         List<Long> listId = new ArrayList<>();
@@ -83,7 +84,7 @@ public class OrderService {
         OrderWithProductCartDTO orderDuplicateDTO;
         orderDuplicateDTO = OrderWithProductCartDTO.builder()
                 .cost(order.getCost())
-                .id(order.getId())
+                .id(order.getId().toHexString())
                 .customerId(order.getCustomerId())
                 .cart(cartWithProduct)
                 .build();
@@ -99,7 +100,7 @@ public class OrderService {
             OrderDuplicateDTO orderDuplicateDTO;
             orderDuplicateDTO = OrderDuplicateDTO.builder()
                     .customerId(order.getCustomerId())
-                    .id(order.getId())
+                    .id(order.getId().toHexString())
                     .cost(order.getCost())
                     .cart(order.getCart())
                     .build();

@@ -45,7 +45,7 @@ public class ProductService {
         List<Product> products = productRepository.findAll();
         List<ProductWithQuantityDTO> resultList = new ArrayList<>();
 
-        Map<Long, Integer> storageMap = new HashMap<>();
+        Map<String, Integer> storageMap = new HashMap<>();
         for (StorageDuplicateDTO storageDuplicateDTO : storageList) {
             storageMap.put(storageDuplicateDTO.getCustomerId(), storageDuplicateDTO.getQuantity());
         }
@@ -67,6 +67,8 @@ public class ProductService {
         log.info("Retrieved all products with quantities: {}", resultList);
         return resultList;
     }
+
+//    todo wrong
 
     @KafkaListener(topics = "product-name-identifier-topic", groupId = "${spring.kafka.consumer-groups.product-name-identifier-group.group-id}")
     public void productVerification(List<StorageDuplicateDTO> productsWithLack) {

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
 
@@ -13,7 +14,7 @@ import java.math.BigDecimal;
 @Builder
 public class SaleDuplicateDTO {
 
-    private Long id;
-    private Long customerId;
+    private String id;
+    private String customerId;
     private BigDecimal sale;
 }

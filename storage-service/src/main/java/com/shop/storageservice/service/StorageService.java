@@ -36,7 +36,7 @@ public class StorageService {
     private final CustomerClient customerClient;
     private final ProductClient productClient;
 
-    private Map<Long, Long> outMapWithId = new HashMap<>();
+    private Map<Long, String> outMapWithId = new HashMap<>();
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -45,8 +45,8 @@ public class StorageService {
     public void addProductById(ProductDuplicateDTO productDuplicateDTO, Integer quantityAdded) {
         repository.addProductById(productDuplicateDTO.getId(), quantityAdded);
         log.info("Product added: {} with quantity: {}", productDuplicateDTO.getName(), quantityAdded);
-        Map<Long, String> productsWasOutMap = new HashMap<>();
-        for (Map.Entry<Long, Long> entry : outMapWithId.entrySet()) {
+        Map<String, String> productsWasOutMap = new HashMap<>();
+        for (Map.Entry<Long, String> entry : outMapWithId.entrySet()) {
             if (entry.getKey().equals(productDuplicateDTO.getId())) {
                 productsWasOutMap.put(entry.getValue(), productDuplicateDTO.getName());
             }
@@ -157,7 +157,7 @@ public class StorageService {
     }
 
     public Map<ProductDuplicateDTO, Integer> findOutOfStorageProduct(
-            Map<ProductDuplicateDTO, Integer> cart, Long customerId) {
+            Map<ProductDuplicateDTO, Integer> cart, String customerId) {
         Map<ProductDuplicateDTO, Integer> outOfStorageProduct = new HashMap<>();
         for (Map.Entry<ProductDuplicateDTO, Integer> entry : cart.entrySet()) {
             if (!isInStorage(entry.getKey().getId(), entry.getValue())) {

@@ -20,7 +20,7 @@ public class Order {
 
     @Id
     private ObjectId id;
-    private Long customerId;
+    private String customerId;
     private Map<Long, Integer> cart;
     private BigDecimal cost;
 }

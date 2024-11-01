@@ -11,6 +11,7 @@ import com.shop.customerservice.model.Sale;
 import com.shop.customerservice.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -55,7 +56,7 @@ public class CustomerService {
         log.info("MailDTO created: {}", mailDTO);
 
         Sale sale = Sale.builder()
-                .customerId(customer.getId())
+                .customerId(customer.getId().toHexString())
                 .sale(new BigDecimal("0.1"))
                 .build();
         log.info("Sale created: {}", sale);
@@ -78,16 +79,16 @@ public class CustomerService {
     }
 
     @CacheEvict(value = {"customer", "allCustomer"}, key = "#id")
-    public void deleteCustomerById(Long id) {
+    public void deleteCustomerById(String id) {
         log.info("Deleting customer with id: {}", id);
-        repository.deleteById(id);
+        repository.deleteById(new ObjectId(id));
         log.info("Customer with id {} deleted successfully", id);
     }
 
     @Cacheable(value = "customer", key = "#id")
-    public CustomerWithCartDTO findCustomerById(Long id) {
+    public CustomerWithCartDTO findCustomerById(String id) {
         log.info("Finding customer by id: {}", id);
-        Customer customer = repository.findById(id).orElse(null);
+        Customer customer = repository.findById(new ObjectId(id)).orElse(null);
         log.info("Customer found: {}", customer);
 
         if (customer != null) {
@@ -114,7 +115,7 @@ public class CustomerService {
                     .surname(customer.getName())
                     .nickName(customer.getNickName())
                     .phoneNumber(customer.getPhoneNumber())
-                    .id(customer.getId())
+                    .id(customer.getId().toHexString())
                     .cart(cartWithProduct)
                     .build();
 
@@ -132,9 +133,9 @@ public class CustomerService {
         return customers;
     }
 
-    public CustomerDTO findCustomerEmailAndNameById(Long customerId) {
+    public CustomerDTO findCustomerEmailAndNameById(String customerId) {
         log.info("Finding customer email and name by id: {}", customerId);
-        Customer customer = repository.findById(customerId).orElse(null);
+        Customer customer = repository.findById(new ObjectId(customerId)).orElse(null);
         CustomerDTO customerDTO = new CustomerDTO();
 
         if (customer != null) {
@@ -148,10 +149,10 @@ public class CustomerService {
         return customerDTO;
     }
 
-    public void customerIdentify(Map<Long, String> productsWasOutMap) {
+    public void customerIdentify(Map<String, String> productsWasOutMap) {
         log.info("Identifying customers for products that were out of stock");
-        for (Map.Entry<Long, String> entry : productsWasOutMap.entrySet()) {
-            Customer customer = repository.findById(entry.getKey()).orElse(null);
+        for (Map.Entry<String, String> entry : productsWasOutMap.entrySet()) {
+            Customer customer = repository.findById(new ObjectId(entry.getKey())).orElse(null);
 
             if (customer != null) {
                 Map<String, Object> data = Map.of(
@@ -172,7 +173,7 @@ public class CustomerService {
 
     public void cleanCart(String id) {
         log.info("Cleaning cart for customer with id: {}", id);
-        Query query = new Query(Criteria.where("id").is(id));
+        Query query = new Query(Criteria.where("id").is(new ObjectId(id)));
         Update update = new Update().set("cart", Map.of());
         log.info("Executing cart clean update for customer with id: {}", id);
         mongoTemplate.updateFirst(query, update, "customer");

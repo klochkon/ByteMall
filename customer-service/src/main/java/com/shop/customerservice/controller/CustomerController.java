@@ -5,6 +5,7 @@ import com.shop.customerservice.dto.CustomerWithCartDTO;
 import com.shop.customerservice.model.Customer;
 import com.shop.customerservice.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteCustomer(@PathVariable Long id) {
+    public void deleteCustomer(@PathVariable ObjectId id) {
         service.deleteCustomerById(id);
     }
 

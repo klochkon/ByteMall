@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StorageDuplicateDTO {
 
-    private Long customerId;
+    private String customerId;
     private Integer quantity;
 }

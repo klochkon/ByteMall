@@ -13,7 +13,7 @@ public interface CustomerClient {
     CustomerDTO findCustomerEmailAndNameById(@PathVariable Long customerId);
 
     @PutMapping("api/v1/customer/clean/cart/{id}")
-    void cleanCart(@PathVariable Long id);
+    void cleanCart(@PathVariable String id);
 
 
 }

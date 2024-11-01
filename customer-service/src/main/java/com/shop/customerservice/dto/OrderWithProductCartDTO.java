@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -14,8 +15,8 @@ import java.util.Map;
 @Builder
 public class OrderWithProductCartDTO {
 
-    private Long id;
-    private Long customerId;
+    private String id;
+    private String customerId;
     private Map<ProductDuplicateDTO, Integer> cart;
     private BigDecimal cost;
 }

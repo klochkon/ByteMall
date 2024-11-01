@@ -14,8 +14,8 @@ import java.util.Map;
 @Builder
 public class OrderDuplicateDTO {
 
-    private Long id;
-    private Long customerId;
+    private String id;
+    private String customerId;
     private Map<Long, Integer> cart;
     private BigDecimal cost;
 }
