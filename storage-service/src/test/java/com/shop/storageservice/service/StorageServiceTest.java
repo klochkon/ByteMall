@@ -13,7 +13,6 @@ import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -75,14 +74,14 @@ class StorageServiceTest {
     @Test
     void addProductById() {
         int quantityAdded = 5;
-        service.getOutMapWithId().put(1L, 123L);
+        service.getOutMapWithId().put(1L, "123");
 
         service.addProductById(productDuplicateDTO, quantityAdded);
 
         verify(repository).addProductById(productDuplicateDTO.getId(), quantityAdded);
 
-        Map<Long, String> expectedProductWasOutMap = new HashMap<>();
-        expectedProductWasOutMap.put(123L, "Test Product");
+        Map<String, String> expectedProductWasOutMap = new HashMap<>();
+        expectedProductWasOutMap.put("123L", "Test Product");
         verify(customerClient).customerIdentify(expectedProductWasOutMap);
         verifyNoMoreInteractions(repository, customerClient);
     }
@@ -158,7 +157,7 @@ class StorageServiceTest {
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
         cart.put(productDuplicateDTO, 15);
 
-        Map<ProductDuplicateDTO, Integer> result = service.findOutOfStorageProduct(cart, 1L);
+        Map<ProductDuplicateDTO, Integer> result = service.findOutOfStorageProduct(cart, "1L");
 
         assertTrue(result.containsKey(productDuplicateDTO));
     }

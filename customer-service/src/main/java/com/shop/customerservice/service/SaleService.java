@@ -51,21 +51,21 @@ public class SaleService {
     }
 
     @CacheEvict(value = {"sale", "allSales"}, key = "#id")
-    public void deleteSaleById(Long id) {
-        repository.deleteById(id);
+    public void deleteSaleById(String id) {
+        repository.deleteById(new ObjectId(id));
         log.info("Sale with id {} deleted successfully", id);
     }
 
     @Cacheable(value = "sale", key = "#id")
-    public Sale findSaleById(Long id) {
-        Sale sale = repository.findById(id).orElse(null);
+    public Sale findSaleById(String id) {
+        Sale sale = repository.findById(new ObjectId(id)).orElse(null);
         log.info("Sale found: {}", sale);
         return sale;
     }
 
     @Cacheable(value = "allOrders")
-    public List<Sale> findAllByCustomerId(Long customerId) {
-        List<Sale> sales = repository.findAllByCustomerId(customerId);
+    public List<Sale> findAllByCustomerId(String customerId) {
+        List<Sale> sales = repository.findAllByCustomerId(new ObjectId(customerId));
         log.info("Total sales found for customer id {}: {}", customerId, sales.size());
         return sales;
     }

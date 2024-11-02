@@ -92,7 +92,7 @@ public class OrderService {
     }
 
     @Cacheable(value = "allOrders")
-    public List<OrderWithProductCartDTO> findAllByCustomerId(Long customerId) {
+    public List<OrderWithProductCartDTO> findAllByCustomerId(String customerId) {
         log.info("Finding all orders for customer id: {}", customerId);
         List<Order> orders = repository.findAllByCustomerId(customerId);
         List<OrderDuplicateDTO> orderDuplicateDTOList = new ArrayList<>();

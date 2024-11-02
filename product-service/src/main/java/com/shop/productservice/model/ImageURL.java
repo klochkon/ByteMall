@@ -21,7 +21,6 @@ public class ImageURL {
     private Long id;
     private URL ImageURL;
 
-
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;

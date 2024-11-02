@@ -1,7 +1,6 @@
 package com.shop.productservice.service;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.shop.productservice.dto.MailDTO;
 import com.shop.productservice.dto.ProductWithQuantityDTO;
 import com.shop.productservice.dto.StorageDuplicateDTO;
@@ -131,7 +130,7 @@ class ProductServiceTest {
     @Test
     void productVerification() {
         StorageDuplicateDTO storageDuplicateDTO = new StorageDuplicateDTO();
-        storageDuplicateDTO.setCustomerId(1L);
+        storageDuplicateDTO.setCustomerId("1L");
         storageDuplicateDTO.setQuantity(10);
 
         productService.productVerification(Collections.singletonList(storageDuplicateDTO));

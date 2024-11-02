@@ -82,7 +82,7 @@ public class StorageService {
         List<StorageDuplicateDTO> storageList = new ArrayList<>();
         for (Storage product : allProducts) {
             StorageDuplicateDTO storageDuplicateDTO = StorageDuplicateDTO.builder()
-                    .customerId(product.getProductId())
+                    .productId(product.getProductId())
                     .quantity(product.getQuantity())
                     .build();
             storageList.add(storageDuplicateDTO);
@@ -104,7 +104,7 @@ public class StorageService {
         for (Storage product : allProducts) {
             if (product.getQuantity() <= 10) {
                 StorageDuplicateDTO storageDuplicateDTO = StorageDuplicateDTO.builder()
-                        .customerId(product.getProductId())
+                        .productId(product.getProductId())
                         .quantity(product.getQuantity())
                         .build();
                 productsWithLack.add(storageDuplicateDTO);

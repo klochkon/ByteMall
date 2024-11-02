@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 public interface CustomerClient {
 
     @GetMapping("api/v1/customer/find/customerDTO/{customerId}")
-    CustomerDTO findCustomerEmailAndNameById(@PathVariable Long customerId);
+    CustomerDTO findCustomerEmailAndNameById(@PathVariable String customerId);
 
     @PutMapping("api/v1/customer/clean/cart/{id}")
     void cleanCart(@PathVariable String id);

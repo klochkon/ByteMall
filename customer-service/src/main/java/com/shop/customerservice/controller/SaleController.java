@@ -25,17 +25,17 @@ public class SaleController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteSaleById(@PathVariable Long id) {
+    public void deleteSaleById(@PathVariable String id) {
         service.deleteSaleById(id);
     }
 
     @GetMapping("find/{id}")
-    public Sale findSaleById(@PathVariable Long id) {
+    public Sale findSaleById(@PathVariable String id) {
         return service.findSaleById(id);
     }
 
     @GetMapping("find/all/{customerId}")
-    public List<Sale> findAllByCustomerId(@PathVariable Long customerId) {
+    public List<Sale> findAllByCustomerId(@PathVariable String customerId) {
         return service.findAllByCustomerId(customerId);
     }
 }

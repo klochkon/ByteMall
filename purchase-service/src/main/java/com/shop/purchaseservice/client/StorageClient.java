@@ -18,5 +18,5 @@ public interface StorageClient {
 
     @GetMapping("api/v1/storage/find/order/out")
     Map<ProductDuplicateDTO, Integer> findOutOfStorageProduct(
-            @RequestBody Map<ProductDuplicateDTO, Integer> cart, @RequestParam Long customerId);
+            @RequestBody Map<ProductDuplicateDTO, Integer> cart, @RequestParam String customerId);
 }

@@ -26,17 +26,17 @@ public class OrderController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteOrderById(@PathVariable Long id) {
+    public void deleteOrderById(@PathVariable String id) {
         service.deleteOrderById(id);
     }
 
     @GetMapping("find/{id}")
-    public OrderWithProductCartDTO findById(@PathVariable Long id) {
+    public OrderWithProductCartDTO findById(@PathVariable String id) {
         return service.findOrderById(id);
     }
 
     @GetMapping("find/{customerId}")
-    public List<OrderWithProductCartDTO> findByCustomerId(@PathVariable Long customerId) {
+    public List<OrderWithProductCartDTO> findByCustomerId(@PathVariable String customerId) {
         return service.findAllByCustomerId(customerId);
     }
 }

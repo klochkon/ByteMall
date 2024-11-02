@@ -15,7 +15,7 @@ spring:
         group-id: product-name-identifier-group
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/Product
+    url: jdbc:postgresql://localhost:5432/product
     password: klochko_08
     username: postgres
 

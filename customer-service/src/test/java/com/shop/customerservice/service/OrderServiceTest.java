@@ -4,6 +4,7 @@ import com.shop.customerservice.client.ProductClient;
 import com.shop.customerservice.dto.OrderWithProductCartDTO;
 import com.shop.customerservice.model.Order;
 import com.shop.customerservice.repository.OrderRepository;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,15 +41,15 @@ public class OrderServiceTest {
     public void setUp() {
 
         orderDto = OrderWithProductCartDTO.builder()
-                .id(1L)
-                .customerId(1L)
+                .id("id")
+                .customerId("1L")
                 .cost(new BigDecimal("100.0"))
                 .cart(new HashMap<>())
                 .build();
 
         order = Order.builder()
-                .id(1L)
-                .customerId(1L)
+                .id(new ObjectId("id"))
+                .customerId("1L")
                 .cost(new BigDecimal("100.0"))
                 .cart(new HashMap<>())
                 .build();
@@ -78,37 +79,33 @@ public class OrderServiceTest {
 
     @Test
     public void testDeleteOrderById() {
-        Long orderId = 1L;
+        doNothing().when(orderRepository).deleteById(any());
 
-        doNothing().when(orderRepository).deleteById(anyLong());
+        orderService.deleteOrderById(order.getId().toHexString());
 
-        orderService.deleteOrderById(orderId);
-
-        verify(orderRepository, times(1)).deleteById(orderId);
+        verify(orderRepository, times(1)).deleteById(order.getId());
     }
 
     @Test
     public void testFindOrderById() {
-        when(orderRepository.findById(anyLong())).thenReturn(Optional.of(order));
+        when(orderRepository.findById(any())).thenReturn(Optional.of(order));
 
-        OrderWithProductCartDTO foundOrder = orderService.findOrderById(1L);
+        OrderWithProductCartDTO foundOrder = orderService.findOrderById(orderDto.getId());
 
         assertNotNull(foundOrder);
         assertEquals(1L, foundOrder.getId());
-        verify(orderRepository, times(1)).findById(anyLong());
+        verify(orderRepository, times(1)).findById(any());
     }
 
     @Test
     public void testFindAllByCustomerId() {
-        Long customerId = 1L;
-
-        when(orderRepository.findAllByCustomerId(customerId)).thenReturn(List.of(order));
+        when(orderRepository.findAllByCustomerId(anyString())).thenReturn(List.of(order));
         when(productClient.groupNameIdentifier(any())).thenReturn(List.of());
 
-        List<OrderWithProductCartDTO> orders = orderService.findAllByCustomerId(customerId);
+        List<OrderWithProductCartDTO> orders = orderService.findAllByCustomerId(orderDto.getCustomerId());
 
         assertNotNull(orders);
-        assertEquals(0, orders.size());
-        verify(orderRepository, times(1)).findAllByCustomerId(customerId);
+        assertEquals(1, orders.size());
+        verify(orderRepository, times(1)).findAllByCustomerId(orderDto.getCustomerId());
     }
 }

@@ -71,7 +71,7 @@ public class PurchaseService {
 
     public void purchaseMailSend(OrderWithProductCartDTO orderWithProductCartDTO) {
         log.info("Sending purchase email for order ID: {}", orderWithProductCartDTO.getId());
-        Long customerId = orderWithProductCartDTO.getCustomerId();
+        String customerId = orderWithProductCartDTO.getCustomerId();
         CustomerDTO customerDTO = customerClient.findCustomerEmailAndNameById(customerId);
         List<String> listOfProducts = new ArrayList<>();
 

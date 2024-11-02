@@ -5,7 +5,6 @@ import com.shop.customerservice.dto.CustomerWithCartDTO;
 import com.shop.customerservice.model.Customer;
 import com.shop.customerservice.service.CustomerService;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,17 +29,17 @@ public class CustomerController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteCustomer(@PathVariable ObjectId id) {
+    public void deleteCustomer(@PathVariable String id) {
         service.deleteCustomerById(id);
     }
 
     @GetMapping("find/{id}")
-    public CustomerWithCartDTO findCustomerById(@PathVariable Long id) {
+    public CustomerWithCartDTO findCustomerById(@PathVariable String id) {
         return service.findCustomerById(id);
     }
 
     @GetMapping("find/customerDTO/{customerId}")
-    public CustomerDTO findCustomerEmailAndNameById(@PathVariable Long customerId) {
+    public CustomerDTO findCustomerEmailAndNameById(@PathVariable String customerId) {
         return service.findCustomerEmailAndNameById(customerId);
     }
 
@@ -55,7 +54,7 @@ public class CustomerController {
     }
 
     @PutMapping("identify/email")
-    public void customerIdentify(@RequestBody Map<Long,String> productsWasOutMap) {
+    public void customerIdentify(@RequestBody Map<String,String> productsWasOutMap) {
         service.customerIdentify(productsWasOutMap);
     }
 

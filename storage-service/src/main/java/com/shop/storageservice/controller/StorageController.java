@@ -65,7 +65,7 @@ public class StorageController {
     @GetMapping("find/order/out")
     public Map<ProductDuplicateDTO, Integer> findOutOfStorageProduct(
             @RequestBody Map<ProductDuplicateDTO, Integer> cart,
-            @RequestParam Long customerId) {
+            @RequestParam String customerId) {
         return service.findOutOfStorageProduct(cart, customerId);
     }
 

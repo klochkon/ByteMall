@@ -9,5 +9,5 @@ import java.util.Map;
 public interface CustomerClient {
 
     @PutMapping("api/v1/customer/identify/email")
-    void customerIdentify(Map<Long,String> productsWasOutMap);
+    void customerIdentify(Map<String, String> productsWasOutMap);
 }

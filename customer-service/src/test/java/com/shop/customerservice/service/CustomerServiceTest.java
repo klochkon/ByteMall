@@ -9,6 +9,7 @@ import com.shop.customerservice.enums.Gender;
 import com.shop.customerservice.model.Customer;
 import com.shop.customerservice.model.Sale;
 import com.shop.customerservice.repository.CustomerRepository;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +64,7 @@ public class CustomerServiceTest {
     public void setUp() {
 
         customer = Customer.builder()
-                .id(1L)
+                .id(new ObjectId("id"))
                 .email("test@example.com")
                 .name("Test User")
                 .cart(new HashMap<>())
@@ -75,8 +76,8 @@ public class CustomerServiceTest {
                 .build();
 
         sale = Sale.builder()
-                .id(1L)
-                .customerId(customer.getId())
+                .id(new ObjectId("id"))
+                .customerId(customer.getId().toHexString())
                 .sale(new BigDecimal("0.1"))
                 .build();
     }
@@ -108,25 +109,24 @@ public class CustomerServiceTest {
 
     @Test
     public void testDeleteCustomerById() {
-        Long customerId = 1L;
 
-        doNothing().when(repository).deleteById(anyLong());
+        doNothing().when(repository).deleteById(any());
 
-        customerService.deleteCustomerById(customerId);
+        customerService.deleteCustomerById(customer.getId().toHexString());
 
-        verify(repository, times(1)).deleteById(customerId);
+        verify(repository, times(1)).deleteById(customer.getId());
     }
 
     @Test
     public void testFindCustomerById() {
-        when(repository.findById(anyLong())).thenReturn(java.util.Optional.of(customer));
+        when(repository.findById(any())).thenReturn(java.util.Optional.of(customer));
         when(productClient.nameIdentifier(any())).thenReturn(new ArrayList<>());
 
-        CustomerWithCartDTO foundCustomer = customerService.findCustomerById(1L);
+        CustomerWithCartDTO foundCustomer = customerService.findCustomerById(customer.getId().toHexString());
 
         assertNotNull(foundCustomer);
         assertEquals(1L, foundCustomer.getId());
-        verify(repository, times(1)).findById(anyLong());
+        verify(repository, times(1)).findById(any());
     }
 
     @Test
@@ -142,22 +142,22 @@ public class CustomerServiceTest {
 
     @Test
     public void testFindCustomerEmailAndNameById() {
-        when(repository.findById(anyLong())).thenReturn(java.util.Optional.of(customer));
+        when(repository.findById(any())).thenReturn(java.util.Optional.of(customer));
 
-        CustomerDTO customerDTO = customerService.findCustomerEmailAndNameById(1L);
+        CustomerDTO customerDTO = customerService.findCustomerEmailAndNameById(customer.getId().toHexString());
 
         assertNotNull(customerDTO);
         assertEquals("test@example.com", customerDTO.getEmail());
         assertEquals("Test User", customerDTO.getName());
-        verify(repository, times(1)).findById(anyLong());
+        verify(repository, times(1)).findById(any());
     }
 
     @Test
     public void testCustomerIdentify() {
-        Map<Long, String> productsWasOutMap = new HashMap<>();
-        productsWasOutMap.put(1L, "Product 1");
+        Map<String, String> productsWasOutMap = new HashMap<>();
+        productsWasOutMap.put("id", "Product 1");
 
-        when(repository.findById(anyLong())).thenReturn(java.util.Optional.of(customer));
+        when(repository.findById(any())).thenReturn(java.util.Optional.of(customer));
 
         customerService.customerIdentify(productsWasOutMap);
 
