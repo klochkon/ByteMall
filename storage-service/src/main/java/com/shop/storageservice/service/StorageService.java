@@ -145,8 +145,8 @@ public class StorageService {
         }
     }
 
-    public Boolean isOrderInStorage(Map<ProductDuplicateDTO, Integer> cart) {
-        for (Map.Entry<ProductDuplicateDTO, Integer> entry : cart.entrySet()) {
+    public Boolean isOrderInStorage(CartDTO cart) {
+        for (Map.Entry<ProductDuplicateDTO, Integer> entry : cart.getCart().entrySet()) {
             if (!this.isInStorage(entry.getKey().getId(), entry.getValue())) {
                 log.warn("Product ID: {} is not in storage for quantity: {}", entry.getKey().getId(), entry.getValue());
                 return false;

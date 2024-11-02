@@ -1,5 +1,6 @@
 package com.shop.purchaseservice.client;
 
+import com.shop.purchaseservice.dto.CartDTO;
 import com.shop.purchaseservice.dto.ProductDuplicateDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,7 @@ import java.util.Map;
 public interface StorageClient {
 
     @PostMapping("api/v1/storage/order-check")
-    Boolean isOrderInStorage(@RequestBody Map<ProductDuplicateDTO, Integer> cart);
+    Boolean isOrderInStorage(@RequestBody CartDTO cart);
 
     @GetMapping("api/v1/storage/find/order/out")
     Map<ProductDuplicateDTO, Integer> findOutOfStorageProduct(

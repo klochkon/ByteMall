@@ -2,10 +2,7 @@ package com.shop.storageservice.service;
 
 import com.shop.storageservice.client.CustomerClient;
 import com.shop.storageservice.client.ProductClient;
-import com.shop.storageservice.dto.OrderWithProductCartDTO;
-import com.shop.storageservice.dto.ProductDuplicateDTO;
-import com.shop.storageservice.dto.ProductWithQuantityDTO;
-import com.shop.storageservice.dto.StorageDuplicateDTO;
+import com.shop.storageservice.dto.*;
 import com.shop.storageservice.model.Storage;
 import com.shop.storageservice.repository.StorageRepository;
 import jakarta.persistence.EntityManager;
@@ -143,11 +140,12 @@ class StorageServiceTest {
     void isOrderInStorage() {
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
         cart.put(productDuplicateDTO, 5);
-
+        CartDTO cartDTO = new CartDTO();
+        cartDTO.setCart(cart);
 
         when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
 
-        Boolean result = service.isOrderInStorage(cart);
+        Boolean result = service.isOrderInStorage(cartDTO);
 
         assertTrue(result);
     }

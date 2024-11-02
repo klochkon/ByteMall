@@ -29,8 +29,10 @@ public class PurchaseService {
     public InventoryStatusDTO purchase(OrderWithProductCartDTO orderWithProductCartDTO) {
         log.info("Processing purchase for order: {}", orderWithProductCartDTO);
         InventoryStatusDTO inventoryStatusDTO = new InventoryStatusDTO();
+        CartDTO cartDTO = new CartDTO();
+        cartDTO.setCart(orderWithProductCartDTO.getCart());
 
-        if (storageClient.isOrderInStorage(orderWithProductCartDTO.getCart())) {
+        if (storageClient.isOrderInStorage(cartDTO)) {
 
             purchaseLogicIfOrderInStorage(orderWithProductCartDTO);
 

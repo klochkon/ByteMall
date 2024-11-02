@@ -1,5 +1,6 @@
 package com.shop.storageservice.controller;
 
+import com.shop.storageservice.dto.CartDTO;
 import com.shop.storageservice.dto.OrderWithProductCartDTO;
 import com.shop.storageservice.dto.ProductDuplicateDTO;
 import com.shop.storageservice.dto.ProductWithQuantityDTO;
@@ -58,7 +59,7 @@ public class StorageController {
     }
 
     @GetMapping("check/order")
-    public Boolean isOrderInStorage(@RequestBody Map<ProductDuplicateDTO, Integer> cart) {
+    public Boolean isOrderInStorage(@RequestBody CartDTO cart) {
         return service.isOrderInStorage(cart);
     }
 
