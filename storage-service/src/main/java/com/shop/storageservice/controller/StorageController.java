@@ -53,7 +53,7 @@ public class StorageController {
     }
 
     @DeleteMapping("delete")
-    public void deleteById(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
+    public void reduceQuantityById(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         service.reduceQuantityById(orderDuplicateDTO);
     }
 
