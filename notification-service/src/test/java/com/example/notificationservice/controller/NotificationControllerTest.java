@@ -4,7 +4,8 @@ import com.example.notificationservice.dto.MailDTO;
 import com.example.notificationservice.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(NotificationController.class)
 public class NotificationControllerTest {
 
@@ -31,7 +33,6 @@ public class NotificationControllerTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
 
         mailDTO = MailDTO.builder()
                 .to("test@example.com")
@@ -45,7 +46,7 @@ public class NotificationControllerTest {
 
         mockMvc.perform(post("/api/v1/notification/send/purchase/test@example.com")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(mailDTO)))
+                        .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
     }
 
@@ -55,7 +56,7 @@ public class NotificationControllerTest {
 
         mockMvc.perform(post("/api/v1/notification/send/registration/test@example.com")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(mailDTO)))
+                        .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
     }
 
@@ -65,7 +66,7 @@ public class NotificationControllerTest {
 
         mockMvc.perform(post("/api/v1/notification/send/verification")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(mailDTO)))
+                        .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
     }
 
@@ -75,15 +76,7 @@ public class NotificationControllerTest {
 
         mockMvc.perform(post("/api/v1/notification/send/storage/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(mailDTO)))
+                        .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

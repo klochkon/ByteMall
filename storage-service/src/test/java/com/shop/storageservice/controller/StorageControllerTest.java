@@ -9,6 +9,9 @@ import com.shop.storageservice.model.Storage;
 import com.shop.storageservice.service.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,13 +30,14 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(StorageController.class)
 class StorageControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private StorageService storageService;
 
     private ProductDuplicateDTO productDuplicateDTO;
@@ -130,17 +134,18 @@ class StorageControllerTest {
     }
 
     @Test
-    void testAddById() throws Exception {
+    void raiseProductQuantityById() throws Exception {
         mockMvc.perform(post("/api/v1/storage/add?quantityAdded=5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(productDuplicateDTO)))
                 .andExpect(status().isOk());
 
-        verify(storageService, times(1)).addProductById(productDuplicateDTO, 5);
+        verify(storageService, times(1)).raiseProductQuantityById(productDuplicateDTO, 5);
     }
 
     @Test
     void testReduceQuantityById() throws Exception {
+        doNothing().when(storageService).reduceQuantityById(any(OrderWithProductCartDTO.class));
         mockMvc.perform(put("/api/v1/storage/delete")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(orderDuplicateDTO)))

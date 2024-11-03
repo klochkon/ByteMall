@@ -69,18 +69,22 @@ class StorageServiceTest {
     }
 
     @Test
-    void addProductById() {
+    void raiseProductQuantityById() {
         int quantityAdded = 5;
-        service.getOutMapWithId().put(1L, "123");
+        doNothing().when(customerClient).customerIdentify(any());
+        doNothing().when(repository).raiseProductQuantityById(anyLong(), anyInt());
+        Map<Long, String> outMapWithId = new HashMap<>();
+        outMapWithId.put(1L, "123");
+        service.setOutMapWithId(outMapWithId);
+        service.raiseProductQuantityById(productDuplicateDTO, quantityAdded);
 
-        service.addProductById(productDuplicateDTO, quantityAdded);
-
-        verify(repository).addProductById(productDuplicateDTO.getId(), quantityAdded);
+        verify(repository).raiseProductQuantityById(productDuplicateDTO.getId(), quantityAdded);
 
         Map<String, String> expectedProductWasOutMap = new HashMap<>();
-        expectedProductWasOutMap.put("123L", "Test Product");
+        expectedProductWasOutMap.put("123", "Test Product");
         verify(customerClient).customerIdentify(expectedProductWasOutMap);
         verifyNoMoreInteractions(repository, customerClient);
+
     }
 
     @Test
@@ -162,8 +166,6 @@ class StorageServiceTest {
 
     @Test
     void productVerification() {
-
-
         when(repository.findAll()).thenReturn(Collections.singletonList(storage));
 
         service.productVerification();

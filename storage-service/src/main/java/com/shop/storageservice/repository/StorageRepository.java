@@ -14,5 +14,5 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
             "SET quantity = quantity + :quantityAdded " +
             "WHERE id = :addedId",
             nativeQuery = true)
-    void addProductById(Long addedId, Integer quantityAdded);
+    void raiseProductQuantityById(Long addedId, Integer quantityAdded);
 }

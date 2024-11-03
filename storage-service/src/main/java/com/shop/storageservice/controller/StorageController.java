@@ -47,10 +47,10 @@ public class StorageController {
     }
 
     @PostMapping("add")
-    public void addById(
+    public void raiseProductQuantityById(
             @RequestBody ProductDuplicateDTO productDuplicateDTO,
             @RequestParam Integer quantityAdded) {
-        service.addProductById(productDuplicateDTO, quantityAdded);
+        service.raiseProductQuantityById(productDuplicateDTO, quantityAdded);
     }
 
     @PutMapping("delete")
@@ -58,7 +58,7 @@ public class StorageController {
         service.reduceQuantityById(orderDuplicateDTO);
     }
 
-    @PostMapping(value = "check/order", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "check/order",consumes = {"application/json", "application/json;charset=UTF-8"}, produces = "application/json")
     public Boolean isOrderInStorage(@RequestBody CartDTO cart) {
         return service.isOrderInStorage(cart);
     }

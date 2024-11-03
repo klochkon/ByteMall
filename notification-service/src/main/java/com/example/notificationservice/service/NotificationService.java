@@ -2,6 +2,7 @@ package com.example.notificationservice.service;
 
 import com.example.notificationservice.dto.MailDTO;
 import jakarta.mail.internet.MimeMessage;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+@Data
 @Service
 @RequiredArgsConstructor
 @Slf4j

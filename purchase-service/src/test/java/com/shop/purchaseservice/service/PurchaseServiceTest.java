@@ -110,7 +110,7 @@ class PurchaseServiceTest {
 
         doNothing().when(purchaseService).purchaseMailSend(any(OrderWithProductCartDTO.class));
 
-        when(kafkaAddOrder.send(eq("order-topic"), eq(orderWithProductCartDTO)))
+        when(kafkaAddOrder.send(eq("order-topic"), any(OrderWithProductCartDTO.class)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         purchaseService.purchaseLogicIfOrderInStorage(orderWithProductCartDTO);

@@ -24,9 +24,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-// TODO COMMIT WAS
-
-
 @WebMvcTest(CustomerController.class)
 class CustomerControllerTest {
 

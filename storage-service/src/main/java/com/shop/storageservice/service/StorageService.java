@@ -42,8 +42,8 @@ public class StorageService {
     private EntityManager entityManager;
 
     @CachePut(value = "storage", key = "#productDuplicateDTO.id")
-    public void addProductById(ProductDuplicateDTO productDuplicateDTO, Integer quantityAdded) {
-        repository.addProductById(productDuplicateDTO.getId(), quantityAdded);
+    public void raiseProductQuantityById(ProductDuplicateDTO productDuplicateDTO, Integer quantityAdded) {
+        repository.raiseProductQuantityById(productDuplicateDTO.getId(), quantityAdded);
         log.info("Product added: {} with quantity: {}", productDuplicateDTO.getName(), quantityAdded);
         Map<String, String> productsWasOutMap = new HashMap<>();
         for (Map.Entry<Long, String> entry : outMapWithId.entrySet()) {

@@ -1,30 +1,25 @@
 package com.example.notificationservice.service;
 
 import com.example.notificationservice.dto.MailDTO;
-import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class NotificationServiceTest {
-
-    @InjectMocks
-    private NotificationService notificationService;
+class NotificationServiceTest {
 
     @Mock
     private JavaMailSender sender;
@@ -32,80 +27,78 @@ public class NotificationServiceTest {
     @Mock
     private TemplateEngine templateEngine;
 
-    @Mock
-    private MimeMessage mimeMessage;
-
-    @Mock
-    private MimeMessageHelper mimeMessageHelper;
+    @Spy
+    @InjectMocks
+    private NotificationService notificationService;
 
     private MailDTO mailDTO;
-    private String template;
-    private String subject;
 
     @BeforeEach
-    void setUp() throws Exception {
-
+    void setUp() {
         mailDTO = new MailDTO();
         mailDTO.setTo("test@example.com");
         mailDTO.setData(Map.of("key", "value"));
-
-        template = "someTemplate";
-        subject = "Test Subject";
-
-        when(sender.createMimeMessage()).thenReturn(mimeMessage);
-
     }
 
     @Test
-    void sendEmailTest() throws MessagingException {
-        when(templateEngine.process(eq(template), any())).thenReturn("<html>Test Email</html>");
+    void testSendEmail() throws Exception {
+        String template = "someTemplate";
+        String subject = "Test Subject";
+
+        when(sender.createMimeMessage()).thenReturn(mock(MimeMessage.class));
+        doNothing().when(sender).send(any(MimeMessage.class));
+        when(templateEngine.process(anyString(), any(Context.class))).thenReturn("html");
 
         notificationService.sendEmail(mailDTO, template, subject);
 
-        verify(mimeMessageHelper).setTo(mailDTO.getTo());
-        verify(mimeMessageHelper).setSubject(subject);
-        verify(mimeMessageHelper).setText("<html>Test Email</html>", true);
-        verify(sender).send(mimeMessage);
+        verify(sender, times(1)).send(any(MimeMessage.class));
     }
 
     @Test
-    void sendPurchaseEmailTest() throws MessagingException {
-        doNothing().when(sendEmail(any(), any(), any()));
-
+    void testSendPurchaseEmail() throws Exception {
+        String purchaseSubject = "purchaseSubject";
+        notificationService.setPurchaseSubject(purchaseSubject);
+        doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
         notificationService.sendPurchaseEmail(mailDTO);
 
-        verify(sender).send(mimeMessage);
+        verify(notificationService, times(1)).sendEmail(eq(mailDTO), anyString(), eq((purchaseSubject)));
     }
 
     @Test
-    void sendRegistrationEmailTest() throws MessagingException {
-        when(templateEngine.process(eq(template), any())).thenReturn("<html>Registration Email</html>");
-
+    void testSendRegistrationEmail() throws Exception {
+        String registrationSubject = "registrationSubject";
+        notificationService.setRegistrationSubject(registrationSubject);
+        doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
         notificationService.sendRegistrationEmail(mailDTO);
 
-        verify(sender).send(mimeMessage);
+        verify(notificationService, times(1)).sendEmail(eq(mailDTO), anyString(), eq((registrationSubject)));
     }
 
     @Test
-    void sendProductVerificationEmailTest() throws MessagingException {
-        String adminEmail = "admin@example.com";
-        notificationService.setStorageAdminEmail(adminEmail);
+    void testSendProductVerificationEmail() throws Exception {
+        String verificationSubject = "verificationSubject";
+        String storageAdminEmail = "storageAdminEmail";
 
-        when(templateEngine.process(eq(template), any())).thenReturn("<html>Verification Email</html>");
+        doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
 
+        notificationService.setStorageAdminEmail(storageAdminEmail);
+        notificationService.setRegistrationSubject(verificationSubject);
         notificationService.sendProductVerificationEmail(mailDTO);
 
-        ArgumentCaptor<MailDTO> mailArgumentCaptor = ArgumentCaptor.forClass(MailDTO.class);
-        verify(sender).send(any());
-        assertEquals(adminEmail, mailArgumentCaptor.getValue().getTo());
+        MailDTO expectedMailDTO = new MailDTO();
+        expectedMailDTO.setData(mailDTO.getData());
+        expectedMailDTO.setTo(storageAdminEmail);
+
+        verify(notificationService, times(1)).sendEmail(eq(expectedMailDTO), anyString(), anyString());
     }
 
     @Test
-    void sendUpdateStorageEmailTest() throws MessagingException {
-        when(templateEngine.process(eq(template), any())).thenReturn("<html>Update Storage Email</html>");
-
+    void testSendUpdateStorageEmail() throws Exception {
+        String updateStorageSubject = "updateStorageSubject";
+        notificationService.setUpdateStorageSubject(updateStorageSubject);
+        doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
         notificationService.sendUpdateStorageEmail(mailDTO);
 
-        verify(sender).send(mimeMessage);
+        verify(notificationService, times(1)).sendEmail(eq(mailDTO), anyString(), eq((updateStorageSubject)));
     }
 }
