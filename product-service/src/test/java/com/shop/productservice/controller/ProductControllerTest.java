@@ -52,7 +52,7 @@ class ProductControllerTest {
     void getAllProductWithQuantity() throws Exception {
         when(service.getAllProductWithQuantity(any())).thenReturn(Collections.singletonList(new ProductWithQuantityDTO()));
 
-        mockMvc.perform(get("/api/v1/product/get/all")
+        mockMvc.perform(post("/api/v1/product/get/all")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[]")) // Sending an empty JSON array
                 .andExpect(status().isOk())
@@ -65,7 +65,7 @@ class ProductControllerTest {
     void groupNameIdentifier() throws Exception {
         when(service.groupNameIdentifier(any())).thenReturn(Collections.singletonList(new OrderWithProductCartDTO()));
 
-        mockMvc.perform(get("/api/v1/product/name-identifier/group")
+        mockMvc.perform(post("/api/v1/product/name-identifier/group")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[]")) // Sending an empty JSON array
                 .andExpect(status().isOk())
@@ -114,7 +114,7 @@ class ProductControllerTest {
     void nameIdentifier() throws Exception {
         when(service.nameIdentifier(any())).thenReturn(Collections.singletonList(new ProductDuplicateDTO()));
 
-        mockMvc.perform(get("/api/v1/product/name-identifier")
+        mockMvc.perform(post("/api/v1/product/name-identifier")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[1]")) // Sending a JSON array with one ID
                 .andExpect(status().isOk())

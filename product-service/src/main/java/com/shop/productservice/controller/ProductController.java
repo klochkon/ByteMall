@@ -18,12 +18,12 @@ public class ProductController {
 
     ProductService service;
 
-    @GetMapping("get/all")
+    @PostMapping("get/all")
     public List<ProductWithQuantityDTO> getAllProductWithQuantity(@RequestBody List<StorageDuplicateDTO> storageList) {
         return service.getAllProductWithQuantity(storageList);
     }
 
-    @GetMapping("name-identifier/group")
+    @PostMapping("name-identifier/group")
     public List<OrderWithProductCartDTO> groupNameIdentifier(@RequestBody List<OrderDuplicateDTO> listOrders) {
         return service.groupNameIdentifier(listOrders);
     }
@@ -47,7 +47,7 @@ public class ProductController {
         service.deleteById(id);
     }
 
-    @GetMapping("name-identifier")
+    @PostMapping("name-identifier")
     public List<ProductDuplicateDTO> nameIdentifier(@RequestBody List<Long> listId) {
         return service.nameIdentifier(listId);
     }

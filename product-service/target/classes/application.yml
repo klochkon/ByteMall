@@ -18,6 +18,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/Product
     password: klochko_08
     username: postgres
+    driver-class-name: org.postgresql.Driver
 
   cache:
     type: redis
@@ -36,12 +37,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-
-aws:
-  s3:
-    bucket-name: bytemallbucket
-    region: eu-north-1
 
 server:
   port: 8083

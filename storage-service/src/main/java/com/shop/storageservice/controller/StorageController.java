@@ -53,17 +53,17 @@ public class StorageController {
         service.addProductById(productDuplicateDTO, quantityAdded);
     }
 
-    @DeleteMapping("delete")
+    @PutMapping("delete")
     public void reduceQuantityById(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         service.reduceQuantityById(orderDuplicateDTO);
     }
 
-    @GetMapping("check/order")
+    @PostMapping(value = "check/order", consumes = "application/json", produces = "application/json")
     public Boolean isOrderInStorage(@RequestBody CartDTO cart) {
         return service.isOrderInStorage(cart);
     }
 
-    @GetMapping("find/order/out")
+    @PostMapping("find/order/out")
     public Map<ProductDuplicateDTO, Integer> findOutOfStorageProduct(
             @RequestBody Map<ProductDuplicateDTO, Integer> cart,
             @RequestParam String customerId) {

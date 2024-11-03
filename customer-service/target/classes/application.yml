@@ -1,0 +1,40 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.value.type: com.shop.customerservice.DTO.OrderDuplicateDTO
+    consumer-groups:
+      order-group:
+        group-id: add-order-group
+      sale-group:
+        group-id: sale-group
+    producer:
+      key-serializer:  org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+    mongodb:
+      database: ByteMall
+      uri: mongodb://localhost:27017/ByteMall
+      auto-index-creation: true
+
+
+url:
+  notificationClient: "http://localhost:8082"
+  productClient: "http://localhost:8083"
+
+server:
+  port: 8081
