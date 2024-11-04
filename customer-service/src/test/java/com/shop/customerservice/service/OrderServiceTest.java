@@ -2,6 +2,7 @@ package com.shop.customerservice.service;
 
 import com.shop.customerservice.client.ProductClient;
 import com.shop.customerservice.dto.OrderWithProductCartDTO;
+import com.shop.customerservice.dto.ProductDuplicateDTO;
 import com.shop.customerservice.model.Order;
 import com.shop.customerservice.repository.OrderRepository;
 import org.bson.types.ObjectId;
@@ -13,98 +14,108 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderServiceTest {
+class OrderServiceTest {
 
     @InjectMocks
     private OrderService orderService;
 
     @Mock
-    private OrderRepository orderRepository;
+    private OrderRepository repository;
 
     @Mock
     private ProductClient productClient;
 
-    private OrderWithProductCartDTO orderDto;
+    private OrderWithProductCartDTO orderWithProductCartDTO;
     private Order order;
+    private ProductDuplicateDTO productDuplicateDTO;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
+        productDuplicateDTO = ProductDuplicateDTO.builder()
+                .id(1L)
+                .name("Test Product")
+                .description("Test Description")
+                .cost(new BigDecimal("9.99"))
+                .producer("Test Producer")
+                .category("Test Category")
+                .feedBack(new BigDecimal("4.5"))
+                .build();
 
-        orderDto = OrderWithProductCartDTO.builder()
-                .id("id")
-                .customerId("1L")
-                .cost(new BigDecimal("100.0"))
-                .cart(new HashMap<>())
+        Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
+        cart.put(productDuplicateDTO, 1);
+        orderWithProductCartDTO = OrderWithProductCartDTO.builder()
+                .id(new ObjectId().toHexString())
+                .customerId("customerId")
+                .cost(BigDecimal.valueOf(100))
+                .cart(cart)
                 .build();
 
         order = Order.builder()
-                .id(new ObjectId("id"))
-                .customerId("1L")
-                .cost(new BigDecimal("100.0"))
-                .cart(new HashMap<>())
+                .id(new ObjectId(orderWithProductCartDTO.getId()))
+                .customerId(orderWithProductCartDTO.getCustomerId())
+                .cost(orderWithProductCartDTO.getCost())
+                .cart(Map.of(1L, 2))
                 .build();
     }
 
     @Test
-    public void testSaveOrder() {
-        when(orderRepository.save(any(Order.class))).thenReturn(order);
+    void saveOrder() {
+        when(repository.save(any(Order.class))).thenReturn(order);
 
-        Order savedOrder = orderService.saveOrder(orderDto);
+        Order savedOrder = orderService.saveOrder(orderWithProductCartDTO);
 
-        assertNotNull(savedOrder);
-        assertEquals(1L, savedOrder.getId());
-        verify(orderRepository, times(1)).save(any(Order.class));
+        verify(repository).save(any(Order.class));
+        assertEquals(orderWithProductCartDTO.getCustomerId(), savedOrder.getCustomerId());
+        assertEquals(orderWithProductCartDTO.getCost(), savedOrder.getCost());
     }
 
     @Test
-    public void testUpdateOrder() {
-        when(orderRepository.save(any(Order.class))).thenReturn(order);
+    void updateOrder() {
+        when(repository.save(any(Order.class))).thenReturn(order);
 
         Order updatedOrder = orderService.updateOrder(order);
 
-        assertNotNull(updatedOrder);
-        assertEquals(1L, updatedOrder.getId());
-        verify(orderRepository, times(1)).save(any(Order.class));
+        verify(repository).save(order);
+        assertEquals(order.getCustomerId(), updatedOrder.getCustomerId());
     }
 
     @Test
-    public void testDeleteOrderById() {
-        doNothing().when(orderRepository).deleteById(any());
+    void deleteOrderById() {
+        doNothing().when(repository).deleteById(any(ObjectId.class));
 
         orderService.deleteOrderById(order.getId().toHexString());
 
-        verify(orderRepository, times(1)).deleteById(order.getId());
+        verify(repository).deleteById(new ObjectId(order.getId().toHexString()));
     }
 
     @Test
-    public void testFindOrderById() {
-        when(orderRepository.findById(any())).thenReturn(Optional.of(order));
+    void findOrderById() {
+        when(repository.findById(any(ObjectId.class))).thenReturn(Optional.of(order));
+        when(productClient.nameIdentifier(anyList())).thenReturn(List.of(productDuplicateDTO));
 
-        OrderWithProductCartDTO foundOrder = orderService.findOrderById(orderDto.getId());
+        OrderWithProductCartDTO foundOrder = orderService.findOrderById(order.getId().toHexString());
 
+        verify(repository).findById(new ObjectId(order.getId().toHexString()));
         assertNotNull(foundOrder);
-        assertEquals(1L, foundOrder.getId());
-        verify(orderRepository, times(1)).findById(any());
+        assertEquals(order.getCustomerId(), foundOrder.getCustomerId());
     }
 
     @Test
-    public void testFindAllByCustomerId() {
-        when(orderRepository.findAllByCustomerId(anyString())).thenReturn(List.of(order));
-        when(productClient.groupNameIdentifier(any())).thenReturn(List.of());
+    void findAllByCustomerId() {
+        when(repository.findAllByCustomerId(anyString())).thenReturn(List.of(order));
+        when(productClient.groupNameIdentifier(anyList())).thenReturn(List.of(orderWithProductCartDTO));
 
-        List<OrderWithProductCartDTO> orders = orderService.findAllByCustomerId(orderDto.getCustomerId());
+        List<OrderWithProductCartDTO> orders = orderService.findAllByCustomerId(order.getCustomerId());
 
+        verify(repository).findAllByCustomerId(order.getCustomerId());
         assertNotNull(orders);
-        assertEquals(1, orders.size());
-        verify(orderRepository, times(1)).findAllByCustomerId(orderDto.getCustomerId());
+        assertFalse(orders.isEmpty());
     }
 }

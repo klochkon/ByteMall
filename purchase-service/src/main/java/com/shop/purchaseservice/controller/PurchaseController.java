@@ -5,6 +5,7 @@ import com.shop.purchaseservice.dto.InventoryStatusDTO;
 import com.shop.purchaseservice.dto.OrderWithProductCartDTO;
 import com.shop.purchaseservice.service.PurchaseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,12 +19,12 @@ public class PurchaseController {
 
     private final PurchaseService service;
 
-    @PostMapping("operation")
+    @PostMapping(value = "operation", consumes = { MediaType.APPLICATION_JSON_VALUE, "application/json;charset=UTF-8" })
     public InventoryStatusDTO purchase(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         return service.purchase(orderDuplicateDTO);
     }
 
-    @PostMapping("mail/send")
+    @PostMapping(value = "mail/send", consumes = { MediaType.APPLICATION_JSON_VALUE, "application/json;charset=UTF-8" })
     public void purchaseMailSend(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         service.purchaseMailSend(orderDuplicateDTO);
     }

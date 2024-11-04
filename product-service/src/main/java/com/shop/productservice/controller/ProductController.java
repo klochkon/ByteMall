@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/api/v1/product")
 public class ProductController {
 
-    ProductService service;
+    private final ProductService service;
 
     @PostMapping("get/all")
     public List<ProductWithQuantityDTO> getAllProductWithQuantity(@RequestBody List<StorageDuplicateDTO> storageList) {
@@ -43,7 +43,7 @@ public class ProductController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteProductById(@PathVariable Long id) {
+    public void deleteProductById(@PathVariable(name = "id") Long id) {
         service.deleteById(id);
     }
 
@@ -53,18 +53,18 @@ public class ProductController {
     }
 
     @GetMapping("share/{slug}")
-    public Product shareProduct(@PathVariable String slug) {
+    public Product shareProduct(@PathVariable(name = "slug") String slug) {
         return service.findBySlug(slug);
     }
 
 
     @GetMapping("get/{id}")
-    public Product getProductById(@PathVariable Long id) {
+    public Product getProductById(@PathVariable(name = "id") Long id) {
         return service.findById(id);
     }
 
     @GetMapping("get/category/{category}")
-    public List<Product> findProductByCategory(@PathVariable String category) {
+    public List<Product> findProductByCategory(@PathVariable(name = "category") String category) {
         return service.findAllByCategory(category);
     }
 }

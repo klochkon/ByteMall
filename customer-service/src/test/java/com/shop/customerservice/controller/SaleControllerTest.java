@@ -3,8 +3,11 @@ package com.shop.customerservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shop.customerservice.model.Sale;
 import com.shop.customerservice.service.SaleService;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -15,100 +18,88 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(SaleController.class)
-public class SaleControllerTest {
+class SaleControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private SaleService service;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private SaleService saleService;
 
     private Sale sale;
 
     @BeforeEach
     void setUp() {
         sale = Sale.builder()
-                .id(1L)
-                .customerId(123L)
-                .sale(new BigDecimal("100.0"))
+                .id(new ObjectId())
+                .customerId("101")
+                .sale(new BigDecimal(10))
                 .build();
     }
 
     @Test
     void testUpdateSale() throws Exception {
-        when(service.updateSale(any(Sale.class))).thenReturn(sale);
+        when(saleService.updateSale(any(Sale.class))).thenReturn(sale);
 
         mockMvc.perform(put("/api/v1/sale/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sale)))
+                        .content(new ObjectMapper().writeValueAsString(sale)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(sale.getId()))
-                .andExpect(jsonPath("$.customerId").value(sale.getCustomerId()))
-                .andExpect(jsonPath("$.sale").value(sale.getSale().toString()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(sale)));
 
-        verify(service).updateSale(any(Sale.class));
+        verify(saleService, times(1)).updateSale(any(Sale.class));
     }
 
     @Test
     void testSaveSale() throws Exception {
-        when(service.saveSale(any(Sale.class))).thenReturn(sale);
+        when(saleService.saveSale(any(Sale.class))).thenReturn(sale);
 
         mockMvc.perform(post("/api/v1/sale/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sale)))
+                        .content(new ObjectMapper().writeValueAsString(sale)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(sale.getId()))
-                .andExpect(jsonPath("$.customerId").value(sale.getCustomerId()))
-                .andExpect(jsonPath("$.sale").value(sale.getSale().toString()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(sale)));
 
-        verify(service).saveSale(any(Sale.class));
+        verify(saleService, times(1)).saveSale(any(Sale.class));
     }
 
     @Test
     void testDeleteSaleById() throws Exception {
-        Long saleId = sale.getId();
+        doNothing().when(saleService).deleteSaleById(anyString());
 
-        mockMvc.perform(delete("/api/v1/sale/delete/{id}", saleId))
+        mockMvc.perform(delete("/api/v1/sale/delete/1"))
                 .andExpect(status().isOk());
 
-        verify(service).deleteSaleById(eq(saleId));
+        verify(saleService, times(1)).deleteSaleById("1");
     }
 
     @Test
     void testFindSaleById() throws Exception {
-        Long saleId = sale.getId();
-        when(service.findSaleById(saleId)).thenReturn(sale);
+        when(saleService.findSaleById(anyString())).thenReturn(sale);
 
-        mockMvc.perform(get("/api/v1/sale/find/{id}", saleId))
+        mockMvc.perform(get("/api/v1/sale/find/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(sale.getId()))
-                .andExpect(jsonPath("$.customerId").value(sale.getCustomerId()))
-                .andExpect(jsonPath("$.sale").value(sale.getSale().toString()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(sale)));
 
-        verify(service).findSaleById(eq(saleId));
+        verify(saleService, times(1)).findSaleById(anyString());
     }
 
     @Test
     void testFindAllByCustomerId() throws Exception {
-        Long customerId = sale.getCustomerId();
-        when(service.findAllByCustomerId(customerId)).thenReturn(List.of(sale));
+        List<Sale> sales = List.of(sale);
+        when(saleService.findAllByCustomerId(anyString())).thenReturn(sales);
 
-        mockMvc.perform(get("/api/v1/sale/find/all/{customerId}", customerId))
+        mockMvc.perform(get("/api/v1/sale/find/all/202"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(sale.getId()))
-                .andExpect(jsonPath("$[0].customerId").value(sale.getCustomerId()))
-                .andExpect(jsonPath("$[0].sale").value(sale.getSale().toString()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(sales)));
 
-        verify(service).findAllByCustomerId(eq(customerId));
+        verify(saleService, times(1)).findAllByCustomerId("202");
     }
 }

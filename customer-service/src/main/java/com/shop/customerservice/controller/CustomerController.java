@@ -29,17 +29,17 @@ public class CustomerController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteCustomer(@PathVariable String id) {
+    public void deleteCustomer(@PathVariable(name = "id") String id) {
         service.deleteCustomerById(id);
     }
 
     @GetMapping("find/{id}")
-    public CustomerWithCartDTO findCustomerById(@PathVariable String id) {
+    public CustomerWithCartDTO findCustomerById(@PathVariable(name = "id") String id) {
         return service.findCustomerById(id);
     }
 
     @GetMapping("find/customerDTO/{customerId}")
-    public CustomerDTO findCustomerEmailAndNameById(@PathVariable String customerId) {
+    public CustomerDTO findCustomerEmailAndNameById(@PathVariable(name = "customerId") String customerId) {
         return service.findCustomerEmailAndNameById(customerId);
     }
 
@@ -49,7 +49,7 @@ public class CustomerController {
     }
 
     @PutMapping("clean/cart/{id}")
-    public void cleanCart(@PathVariable String id) {
+    public void cleanCart(@PathVariable(name = "id") String id) {
         service.cleanCart(id);
     }
 

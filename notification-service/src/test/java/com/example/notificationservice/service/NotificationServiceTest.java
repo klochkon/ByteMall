@@ -42,6 +42,7 @@ class NotificationServiceTest {
 
     @Test
     void testSendEmail() throws Exception {
+//        given
         String template = "someTemplate";
         String subject = "Test Subject";
 
@@ -49,42 +50,54 @@ class NotificationServiceTest {
         doNothing().when(sender).send(any(MimeMessage.class));
         when(templateEngine.process(anyString(), any(Context.class))).thenReturn("html");
 
+//        when
         notificationService.sendEmail(mailDTO, template, subject);
 
+//        then
         verify(sender, times(1)).send(any(MimeMessage.class));
     }
 
     @Test
     void testSendPurchaseEmail() throws Exception {
+//        given
         String purchaseSubject = "purchaseSubject";
         notificationService.setPurchaseSubject(purchaseSubject);
         doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
+
+//        when
         notificationService.sendPurchaseEmail(mailDTO);
 
+//        then
         verify(notificationService, times(1)).sendEmail(eq(mailDTO), anyString(), eq((purchaseSubject)));
     }
 
     @Test
     void testSendRegistrationEmail() throws Exception {
+//        given
         String registrationSubject = "registrationSubject";
         notificationService.setRegistrationSubject(registrationSubject);
         doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
+
+//        when
         notificationService.sendRegistrationEmail(mailDTO);
 
+//        then
         verify(notificationService, times(1)).sendEmail(eq(mailDTO), anyString(), eq((registrationSubject)));
     }
 
     @Test
     void testSendProductVerificationEmail() throws Exception {
+//        given
         String verificationSubject = "verificationSubject";
         String storageAdminEmail = "storageAdminEmail";
-
         doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
-
         notificationService.setStorageAdminEmail(storageAdminEmail);
         notificationService.setRegistrationSubject(verificationSubject);
+
+//        when
         notificationService.sendProductVerificationEmail(mailDTO);
 
+//        then
         MailDTO expectedMailDTO = new MailDTO();
         expectedMailDTO.setData(mailDTO.getData());
         expectedMailDTO.setTo(storageAdminEmail);
@@ -94,11 +107,15 @@ class NotificationServiceTest {
 
     @Test
     void testSendUpdateStorageEmail() throws Exception {
+//        given
         String updateStorageSubject = "updateStorageSubject";
         notificationService.setUpdateStorageSubject(updateStorageSubject);
         doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
+
+//        when
         notificationService.sendUpdateStorageEmail(mailDTO);
 
+//        then
         verify(notificationService, times(1)).sendEmail(eq(mailDTO), anyString(), eq((updateStorageSubject)));
     }
 }

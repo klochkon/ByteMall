@@ -1,140 +1,167 @@
 package com.shop.customerservice.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shop.customerservice.dto.CustomerDTO;
 import com.shop.customerservice.dto.CustomerWithCartDTO;
+import com.shop.customerservice.enums.Gender;
 import com.shop.customerservice.model.Customer;
 import com.shop.customerservice.service.CustomerService;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(CustomerController.class)
 class CustomerControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private CustomerService service;
+    @MockBean
+    private CustomerService customerService;
 
     private Customer customer;
+    private CustomerWithCartDTO customerWithCartDTO;
+    private CustomerDTO customerDTO;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        Map<Long, Integer> cart = new HashMap<>();
+        cart.put(1L, 2);
         customer = Customer.builder()
-                .id(1L)
-                .name("John Doe")
-                .email("john.doe@example.com")
+                .id(new ObjectId())
+                .email("test@example.com")
+                .phoneNumber("123456789")
+                .nickName("testNick")
+                .name("Test Name")
+                .surname("Test Surname")
+                .gender(Gender.MALE)
+                .cart(cart)
+                .newsLetterSubscribe(true)
+                .build();
+
+        customerWithCartDTO = CustomerWithCartDTO.builder()
+                .id("id")
+                .email("test@example.com")
+                .phoneNumber("123456789")
+                .nickName("testNick")
+                .name("Test Name")
+                .surname("Test Surname")
+                .newsLetterSubscribe(true)
+                .build();
+
+        customerDTO = CustomerDTO.builder()
+                .name("Test Customer")
+                .email("test@example.com")
                 .build();
     }
 
     @Test
-    void saveCustomer() throws Exception {
-        when(service.saveCustomer(any(Customer.class))).thenReturn(customer);
+    void testSaveCustomer() throws Exception {
+        when(customerService.saveCustomer(any(Customer.class))).thenReturn(customer);
 
         mockMvc.perform(post("/api/v1/customer/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\"}"))
+                        .content(new ObjectMapper().writeValueAsString(customer)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("John Doe"))
-                .andExpect(jsonPath("$.email").value("john.doe@example.com"));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(customer)));
 
-        verify(service, times(1)).saveCustomer(any(Customer.class));
+        verify(customerService, times(1)).saveCustomer(any(Customer.class));
     }
 
     @Test
-    void updateCustomer() throws Exception {
-        when(service.updateCustomer(any(Customer.class))).thenReturn(customer);
+    void testUpdateCustomer() throws Exception {
+        when(customerService.updateCustomer(any(Customer.class))).thenReturn(customer);
 
         mockMvc.perform(put("/api/v1/customer/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\":1,\"name\":\"John Doe\",\"email\":\"john.doe@example.com\"}"))
+                        .content(new ObjectMapper().writeValueAsString(customer)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("John Doe"))
-                .andExpect(jsonPath("$.email").value("john.doe@example.com"));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(customer)));
 
-        verify(service, times(1)).updateCustomer(any(Customer.class));
+        verify(customerService, times(1)).updateCustomer(any(Customer.class));
     }
 
     @Test
-    void deleteCustomer() throws Exception {
-        doNothing().when(service).deleteCustomerById(anyLong());
+    void testDeleteCustomer() throws Exception {
+        doNothing().when(customerService).deleteCustomerById(anyString());
 
         mockMvc.perform(delete("/api/v1/customer/delete/1"))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).deleteCustomerById(1L);
+        verify(customerService, times(1)).deleteCustomerById("1");
     }
 
     @Test
-    void findCustomerById() throws Exception {
-        CustomerWithCartDTO customerWithCartDTO = new CustomerWithCartDTO();
-        when(service.findCustomerById(anyLong())).thenReturn(customerWithCartDTO);
+    void testFindCustomerById() throws Exception {
+        when(customerService.findCustomerById(anyString())).thenReturn(customerWithCartDTO);
 
         mockMvc.perform(get("/api/v1/customer/find/1"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(customerWithCartDTO)));
 
-        verify(service, times(1)).findCustomerById(1L);
+        verify(customerService, times(1)).findCustomerById("1");
     }
 
     @Test
-    void findCustomerEmailAndNameById() throws Exception {
-        CustomerDTO customerDTO = new CustomerDTO();
-        when(service.findCustomerEmailAndNameById(anyLong())).thenReturn(customerDTO);
+    void testFindCustomerEmailAndNameById() throws Exception {
+        when(customerService.findCustomerEmailAndNameById(anyString())).thenReturn(customerDTO);
 
         mockMvc.perform(get("/api/v1/customer/find/customerDTO/1"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(customerDTO)));
 
-        verify(service, times(1)).findCustomerEmailAndNameById(1L);
+        verify(customerService, times(1)).findCustomerEmailAndNameById("1");
     }
 
     @Test
-    void findAllCustomer() throws Exception {
-        when(service.findAllCustomer()).thenReturn(Collections.singletonList(customer));
+    void testFindAllCustomer() throws Exception {
+        List<Customer> customers = List.of(customer);
+        when(customerService.findAllCustomer()).thenReturn(customers);
 
         mockMvc.perform(get("/api/v1/customer/find/all"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(customers)));
 
-        verify(service, times(1)).findAllCustomer();
+        verify(customerService, times(1)).findAllCustomer();
     }
 
     @Test
-    void cleanCart() throws Exception {
-        doNothing().when(service).cleanCart(anyString());
+    void testCleanCart() throws Exception {
+        doNothing().when(customerService).cleanCart(anyString());
 
         mockMvc.perform(put("/api/v1/customer/clean/cart/1"))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).cleanCart("1");
+        verify(customerService, times(1)).cleanCart("1");
     }
 
     @Test
-    void customerIdentify() throws Exception {
-        Map<Long, String> productsMap = new HashMap<>();
-        productsMap.put(1L, "Product 1");
+    void testCustomerIdentify() throws Exception {
+        Map<String, String> productsWasOutMap = Map.of("key", "value");
 
         mockMvc.perform(put("/api/v1/customer/identify/email")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"1\":\"Product 1\"}"))
+                        .content(new ObjectMapper().writeValueAsString(productsWasOutMap)))
                 .andExpect(status().isOk());
 
-        verify(service, times(1)).customerIdentify(any());
+        verify(customerService, times(1)).customerIdentify(any(Map.class));
     }
 }

@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,6 +38,8 @@ class ProductControllerTest {
 
     private Product product;
 
+    private List<MultipartFile> photos;
+
     @BeforeEach
     void setUp() {
         product = Product.builder()
@@ -45,6 +49,22 @@ class ProductControllerTest {
                 .cost(new BigDecimal("100.0"))
                 .description("Test Description")
                 .build();
+
+        MockMultipartFile photo1 = new MockMultipartFile(
+                "photos",
+                "photo1.jpg",
+                "image/jpeg",
+                "Test Image Content 1".getBytes()
+        );
+
+        MockMultipartFile photo2 = new MockMultipartFile(
+                "photos",
+                "photo2.jpg",
+                "image/jpeg",
+                "Test Image Content 2".getBytes()
+        );
+
+        photos = List.of(photo1, photo2);
     }
 
     @Test
@@ -81,7 +101,9 @@ class ProductControllerTest {
 
         mockMvc.perform(post("/api/v1/product/create")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(photos))
                         .content(new ObjectMapper().writeValueAsString(product)))
+
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
 
@@ -94,6 +116,7 @@ class ProductControllerTest {
 
         mockMvc.perform(put("/api/v1/product/update")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(photos))
                         .content(new ObjectMapper().writeValueAsString(product)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));

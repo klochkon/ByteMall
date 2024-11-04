@@ -68,8 +68,6 @@ public class ProductService {
         return resultList;
     }
 
-//    todo wrong
-
     @KafkaListener(topics = "product-name-identifier-topic", groupId = "${spring.kafka.consumer-groups.product-name-identifier-group.group-id}")
     public void productVerification(List<StorageDuplicateDTO> productsWithLack) {
         log.info("Received products with lack for verification: {}", productsWithLack);
@@ -188,11 +186,10 @@ public class ProductService {
         Integer numberOfIterations = 0;
         for (ImageURL url : product.getImageUrl()) {
             numberOfIterations++;
-            StringBuilder photoName = new StringBuilder();
-            photoName.append(product.getName());
-            photoName.append("_");
-            photoName.append(numberOfIterations);
-            amazonS3.deleteObject(bucketName, photoName.toString());
+            String photoName = product.getName() +
+                    "_" +
+                    numberOfIterations;
+            amazonS3.deleteObject(bucketName, photoName);
         }
         log.info("Product photo with name: {} deleted from bucket", product.getName());
         productRepository.deleteById(id);
