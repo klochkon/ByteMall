@@ -37,7 +37,7 @@ class StorageControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private StorageService storageService;
 
     private ProductDuplicateDTO productDuplicateDTO;

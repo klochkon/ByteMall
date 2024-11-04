@@ -15,7 +15,7 @@ public class CommentController {
     private final CommentService service;
 
     @GetMapping("find/product/{productId}")
-    public List<Comment> findAllByProductId(@PathVariable Long productId) {
+    public List<Comment> findAllByProductId(@PathVariable(name = "productId") Long productId) {
         return service.findAllByProductId(productId);
     }
 
@@ -30,12 +30,12 @@ public class CommentController {
     }
 
     @DeleteMapping("delete/{id}")
-    public void deleteCommentById(@PathVariable Long id) {
+    public void deleteCommentById(@PathVariable(name = "id") Long id) {
         service.deleteCommentById(id);
     }
 
     @GetMapping("find/author/{authorNickname}")
-    public List<Comment> findAllByAuthorNickname(@PathVariable String authorNickname) {
+    public List<Comment> findAllByAuthorNickname(@PathVariable(name = "authorNickname") String authorNickname) {
         return service.findAllByAuthorNickname(authorNickname);
     }
 

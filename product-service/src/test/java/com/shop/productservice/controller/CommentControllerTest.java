@@ -1,107 +1,118 @@
 package com.shop.productservice.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shop.productservice.model.Comment;
+import com.shop.productservice.model.Product;
 import com.shop.productservice.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
+@WebMvcTest(CommentController.class)
 class CommentControllerTest {
 
-    @Mock
-    private CommentService service;
-
-    @InjectMocks
-    private CommentController controller;
-
+    @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private CommentService commentService;
+
+    private Product product;
+
     private Comment comment;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        product = Product.builder()
+                .id(1L)
+                .name("Test Product")
+                .category("Electronics")
+                .cost(new BigDecimal("100.0"))
+                .description("Test Description")
+                .build();
 
         comment = Comment.builder()
                 .id(1L)
-                .authorNickname("JohnDoe")
-                .dateOfPublishing(LocalDate.now())
-                .comment("Great product!")
+                .comment("comment")
+                .authorNickname("author")
+                .product(product)
                 .build();
     }
 
     @Test
-    void findAllByProductId() throws Exception {
-        List<Comment> commentList = new ArrayList<>();
-        commentList.add(comment);
+    void testFindAllByProductId() throws Exception {
+        List<Comment> comments = List.of(comment);
+        when(commentService.findAllByProductId(anyLong())).thenReturn(comments);
 
-        when(service.findAllByProductId(anyLong())).thenReturn(commentList);
-
-        mockMvc.perform(get("/api/v1/comment/find/product/{productId}", 1L))
+        mockMvc.perform(get("/api/v1/comment/find/product/10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].authorNickname").value("JohnDoe"));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(comments)));
+
+        verify(commentService, times(1)).findAllByProductId(10L);
     }
 
     @Test
-    void addComment() throws Exception {
-        when(service.addComment(any(Comment.class))).thenReturn(comment);
+    void testAddComment() throws Exception {
+        when(commentService.addComment(any(Comment.class))).thenReturn(comment);
 
         mockMvc.perform(post("/api/v1/comment/add")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"authorNickname\":\"JohnDoe\", \"comment\":\"Great product!\"}"))
+                        .content(new ObjectMapper().writeValueAsString(comment)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.authorNickname").value("JohnDoe"))
-                .andExpect(jsonPath("$.comment").value("Great product!"));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(comment)));
+
+        verify(commentService, times(1)).addComment(any(Comment.class));
     }
 
     @Test
-    void updateComment() throws Exception {
-        when(service.updateComment(any(Comment.class))).thenReturn(comment);
+    void testUpdateComment() throws Exception {
+        when(commentService.updateComment(any(Comment.class))).thenReturn(comment);
 
         mockMvc.perform(put("/api/v1/comment/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\":1, \"authorNickname\":\"JohnDoe\", \"comment\":\"Updated comment\"}"))
+                        .content(new ObjectMapper().writeValueAsString(comment)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.authorNickname").value("JohnDoe"))
-                .andExpect(jsonPath("$.comment").value("Updated comment"));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(comment)));
+
+        verify(commentService, times(1)).updateComment(any(Comment.class));
     }
 
     @Test
-    void deleteCommentById() throws Exception {
-        mockMvc.perform(delete("/api/v1/comment/delete/{id}", 1L))
+    void testDeleteCommentById() throws Exception {
+        doNothing().when(commentService).deleteCommentById(anyLong());
+
+        mockMvc.perform(delete("/api/v1/comment/delete/1"))
                 .andExpect(status().isOk());
+
+        verify(commentService, times(1)).deleteCommentById(1L);
     }
 
     @Test
-    void findAllByAuthorNickname() throws Exception {
-        List<Comment> commentList = new ArrayList<>();
-        commentList.add(comment);
+    void testFindAllByAuthorNickname() throws Exception {
+        List<Comment> comments = List.of(comment);
+        when(commentService.findAllByAuthorNickname(anyString())).thenReturn(comments);
 
-        when(service.findAllByAuthorNickname(anyString())).thenReturn(commentList);
-
-        mockMvc.perform(get("/api/v1/comment/find/author/{authorNickname}", "JohnDoe"))
+        mockMvc.perform(get("/api/v1/comment/find/author/Author1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].authorNickname").value("JohnDoe"))
-                .andExpect(jsonPath("$[0].comment").value("Great product!"));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(comments)));
+
+        verify(commentService, times(1)).findAllByAuthorNickname("Author1");
     }
 }

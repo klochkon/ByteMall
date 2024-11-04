@@ -1,42 +1,43 @@
 package com.shop.productservice.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shop.productservice.dto.*;
 import com.shop.productservice.model.Product;
 import com.shop.productservice.service.ProductService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private ProductService service;
+    @MockBean
+    private ProductService productService;
 
     private Product product;
-    private MockMultipartFile photo;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         product = Product.builder()
                 .id(1L)
                 .name("Test Product")
@@ -44,114 +45,117 @@ class ProductControllerTest {
                 .cost(new BigDecimal("100.0"))
                 .description("Test Description")
                 .build();
-
-        photo = new MockMultipartFile("photo", "test.jpg", "image/jpeg", new ByteArrayInputStream("test".getBytes()));
     }
 
     @Test
-    void getAllProductWithQuantity() throws Exception {
-        when(service.getAllProductWithQuantity(any())).thenReturn(Collections.singletonList(new ProductWithQuantityDTO()));
+    void testGetAllProductWithQuantity() throws Exception {
+        List<ProductWithQuantityDTO> products = List.of(new ProductWithQuantityDTO());
+        when(productService.getAllProductWithQuantity(any())).thenReturn(products);
 
         mockMvc.perform(post("/api/v1/product/get/all")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("[]")) // Sending an empty JSON array
+                        .content(new ObjectMapper().writeValueAsString(List.of(new StorageDuplicateDTO()))))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isNotEmpty());
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(products)));
+
+        verify(productService, times(1)).getAllProductWithQuantity(any());
     }
 
     @Test
-    void groupNameIdentifier() throws Exception {
-        when(service.groupNameIdentifier(any())).thenReturn(Collections.singletonList(new OrderWithProductCartDTO()));
+    void testGroupNameIdentifier() throws Exception {
+        List<OrderWithProductCartDTO> orderList = List.of(new OrderWithProductCartDTO());
+        when(productService.groupNameIdentifier(any())).thenReturn(orderList);
 
         mockMvc.perform(post("/api/v1/product/name-identifier/group")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("[]")) // Sending an empty JSON array
+                        .content(new ObjectMapper().writeValueAsString(List.of(new OrderDuplicateDTO()))))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isNotEmpty());
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(orderList)));
+
+        verify(productService, times(1)).groupNameIdentifier(any());
     }
 
     @Test
-    void createProduct() throws Exception {
-        when(service.createProduct(any(), any())).thenReturn(product);
+    void testCreateProduct() throws Exception {
+        when(productService.createProduct(any(Product.class), any())).thenReturn(product);
 
-        mockMvc.perform(multipart("/api/v1/product/create")
-                        .file(photo)
+        mockMvc.perform(post("/api/v1/product/create")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(product))) // Sending the product as JSON
+                        .content(new ObjectMapper().writeValueAsString(product)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(product.getId()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
+
+        verify(productService, times(1)).createProduct(any(Product.class), any());
     }
 
     @Test
-    void updateProduct() throws Exception {
-        when(service.updateProduct(any(), any())).thenReturn(product);
+    void testUpdateProduct() throws Exception {
+        when(productService.updateProduct(any(Product.class), any())).thenReturn(product);
 
-        mockMvc.perform(multipart("/api/v1/product/update")
-                        .file(photo)
+        mockMvc.perform(put("/api/v1/product/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(product))) // Sending the product as JSON
+                        .content(new ObjectMapper().writeValueAsString(product)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(product.getId()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
+
+        verify(productService, times(1)).updateProduct(any(Product.class), any());
     }
 
     @Test
-    void deleteProductById() throws Exception {
-        doNothing().when(service).deleteById(anyLong());
+    void testDeleteProductById() throws Exception {
+        doNothing().when(productService).deleteById(anyLong());
 
         mockMvc.perform(delete("/api/v1/product/delete/1"))
                 .andExpect(status().isOk());
 
-        verify(service).deleteById(1L);
+        verify(productService, times(1)).deleteById(1L);
     }
 
     @Test
-    void nameIdentifier() throws Exception {
-        when(service.nameIdentifier(any())).thenReturn(Collections.singletonList(new ProductDuplicateDTO()));
+    void testNameIdentifier() throws Exception {
+        List<ProductDuplicateDTO> duplicates = List.of(new ProductDuplicateDTO());
+        when(productService.nameIdentifier(any())).thenReturn(duplicates);
 
         mockMvc.perform(post("/api/v1/product/name-identifier")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("[1]")) // Sending a JSON array with one ID
+                        .content(new ObjectMapper().writeValueAsString(List.of(1L, 2L))))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isNotEmpty());
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(duplicates)));
+
+        verify(productService, times(1)).nameIdentifier(any());
     }
 
     @Test
-    void shareProduct() throws Exception {
-        when(service.findBySlug(any())).thenReturn(product);
+    void testShareProduct() throws Exception {
+        when(productService.findBySlug(anyString())).thenReturn(product);
 
         mockMvc.perform(get("/api/v1/product/share/test-slug"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(product.getId()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
+
+        verify(productService, times(1)).findBySlug("test-slug");
     }
 
     @Test
-    void getProductById() throws Exception {
-        when(service.findById(anyLong())).thenReturn(product);
+    void testGetProductById() throws Exception {
+        when(productService.findById(anyLong())).thenReturn(product);
 
         mockMvc.perform(get("/api/v1/product/get/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(product.getId()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
+
+        verify(productService, times(1)).findById(1L);
     }
 
     @Test
-    void findProductByCategory() throws Exception {
-        when(service.findAllByCategory(any())).thenReturn(Collections.singletonList(product));
+    void testFindProductByCategory() throws Exception {
+        List<Product> products = List.of(product);
+        when(productService.findAllByCategory(anyString())).thenReturn(products);
 
         mockMvc.perform(get("/api/v1/product/get/category/Electronics"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isNotEmpty())
-                .andExpect(jsonPath("$[0].id").value(product.getId()));
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(products)));
+
+        verify(productService, times(1)).findAllByCategory("Electronics");
     }
 }
