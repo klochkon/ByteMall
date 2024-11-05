@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -81,7 +82,14 @@ class CustomerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(customer)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(customer)));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.phoneNumber").value("123456789"))
+                .andExpect(jsonPath("$.nickName").value("testNick"))
+                .andExpect(jsonPath("$.name").value("Test Name"))
+                .andExpect(jsonPath("$.surname").value("Test Surname"))
+                .andExpect(jsonPath("$.gender").value("MALE"))
+                .andExpect(jsonPath("$.newsLetterSubscribe").value(true));
 
         verify(customerService, times(1)).saveCustomer(any(Customer.class));
     }
@@ -94,7 +102,14 @@ class CustomerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(customer)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(customer)));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.phoneNumber").value("123456789"))
+                .andExpect(jsonPath("$.nickName").value("testNick"))
+                .andExpect(jsonPath("$.name").value("Test Name"))
+                .andExpect(jsonPath("$.surname").value("Test Surname"))
+                .andExpect(jsonPath("$.gender").value("MALE"))
+                .andExpect(jsonPath("$.newsLetterSubscribe").value(true));
 
         verify(customerService, times(1)).updateCustomer(any(Customer.class));
     }
@@ -138,7 +153,15 @@ class CustomerControllerTest {
 
         mockMvc.perform(get("/api/v1/customer/find/all"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(customers)));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").exists())
+                .andExpect(jsonPath("$[0].email").value("test@example.com"))
+                .andExpect(jsonPath("$[0].phoneNumber").value("123456789"))
+                .andExpect(jsonPath("$[0].nickName").value("testNick"))
+                .andExpect(jsonPath("$[0].name").value("Test Name"))
+                .andExpect(jsonPath("$[0].surname").value("Test Surname"))
+                .andExpect(jsonPath("$[0].gender").value("MALE"))
+                .andExpect(jsonPath("$[0].newsLetterSubscribe").value(true));
 
         verify(customerService, times(1)).findAllCustomer();
     }

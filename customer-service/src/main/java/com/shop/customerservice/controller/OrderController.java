@@ -4,6 +4,7 @@ import com.shop.customerservice.dto.OrderWithProductCartDTO;
 import com.shop.customerservice.model.Order;
 import com.shop.customerservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,14 +16,14 @@ public class OrderController {
 
     private final OrderService service;
 
-    @PostMapping("save")
+    @PostMapping(value = "save", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Order saveOrder(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         return service.saveOrder(orderDuplicateDTO);
     }
 
     @PutMapping("update")
-    public Order updateOrder(@RequestBody Order order) {
-        return service.updateOrder(order);
+    public Order updateOrder(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
+        return service.updateOrder(orderDuplicateDTO);
     }
 
     @DeleteMapping("delete/{id}")
@@ -35,7 +36,7 @@ public class OrderController {
         return service.findOrderById(id);
     }
 
-    @GetMapping("find/{customerId}")
+    @GetMapping("find/customer/{customerId}")
     public List<OrderWithProductCartDTO> findByCustomerId(@PathVariable(name = "customerId") String customerId) {
         return service.findAllByCustomerId(customerId);
     }

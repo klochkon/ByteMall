@@ -44,6 +44,8 @@ class PurchaseServiceTest {
     private OrderWithProductCartDTO orderWithProductCartDTO;
     private Map<ProductDuplicateDTO, Integer> cart;
 
+    private SaleDuplicateDTO sale;
+
     @BeforeEach
     void setUp() {
 
@@ -66,11 +68,17 @@ class PurchaseServiceTest {
                 .cart(cart)
                 .cost(new BigDecimal(600))
                 .build();
+
+        sale = SaleDuplicateDTO.builder()
+                .id("id")
+                .customerId("customerId")
+                .sale(new BigDecimal(700))
+                .build();
     }
 
     @Test
     void testPurchase_OrderInStorage() {
-        when(storageClient.isOrderInStorage(any(CartDTO.class))).thenReturn(true);
+        when(storageClient.isOrderInStorage(any())).thenReturn(true);
         doNothing().when(purchaseService).purchaseLogicIfOrderInStorage(orderWithProductCartDTO);
 
         InventoryStatusDTO result = purchaseService.purchase(orderWithProductCartDTO);
@@ -82,7 +90,7 @@ class PurchaseServiceTest {
 
     @Test
     void testPurchase_OrderNotInStorage() {
-        when(storageClient.isOrderInStorage(any(CartDTO.class))).thenReturn(false);
+        when(storageClient.isOrderInStorage(any())).thenReturn(false);
         Map<ProductDuplicateDTO, Integer> outOfStockProducts = Map.of(
                 ProductDuplicateDTO.builder()
                         .id(2L)
@@ -105,19 +113,19 @@ class PurchaseServiceTest {
     @Test
     void testPurchaseLogicIfOrderInStorage() {
         doNothing().when(customerClient).cleanCart(anyString());
-        when(kafkaSale.send(eq("sale-topic"), any(SaleDuplicateDTO.class)))
+        when(kafkaSale.send(eq("sale-topic"), eq(sale)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
-        doNothing().when(purchaseService).purchaseMailSend(any(OrderWithProductCartDTO.class));
+        doNothing().when(purchaseService).purchaseMailSend(eq(orderWithProductCartDTO));
 
-        when(kafkaAddOrder.send(eq("order-topic"), any(OrderWithProductCartDTO.class)))
+        when(kafkaAddOrder.send(eq("order-topic"), eq(orderWithProductCartDTO)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         purchaseService.purchaseLogicIfOrderInStorage(orderWithProductCartDTO);
 
-        verify(kafkaAddOrder, times(1)).send(eq("order-topic"), any(OrderWithProductCartDTO.class));
+        verify(kafkaAddOrder, times(1)).send(eq("order-topic"), eq(orderWithProductCartDTO));
         verify(customerClient, times(1)).cleanCart(orderWithProductCartDTO.getCustomerId());
-        verify(kafkaSale, times(1)).send(eq("sale-topic"), any(SaleDuplicateDTO.class));
+        verify(kafkaSale, times(1)).send(eq("sale-topic"), eq(sale));
     }
 
     @Test
@@ -155,12 +163,16 @@ class PurchaseServiceTest {
                 .email("test@example.com")
                 .name("Test Customer")
                 .build();
+        MailDTO mailDTO = MailDTO.builder()
+                .to("email")
+                .data(Map.of("string", "object"))
+                .build();
         when(customerClient.findCustomerEmailAndNameById(anyString())).thenReturn(customerDTO);
-        when(kafkaMail.send(eq("mail-topic"), any(MailDTO.class)))
+        when(kafkaMail.send(eq("mail-topic"), eq(mailDTO)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         purchaseService.purchaseMailSend(orderWithProductCartDTO);
 
-        verify(kafkaMail, times(1)).send(eq("mail-topic"), any(MailDTO.class));
+        verify(kafkaMail, times(1)).send(eq("mail-topic"), eq(mailDTO));
     }
 }

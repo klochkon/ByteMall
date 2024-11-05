@@ -1,6 +1,5 @@
 package com.shop.storageservice.controller;
 
-import com.shop.storageservice.dto.CartDTO;
 import com.shop.storageservice.dto.OrderWithProductCartDTO;
 import com.shop.storageservice.dto.ProductDuplicateDTO;
 import com.shop.storageservice.dto.ProductWithQuantityDTO;
@@ -63,10 +62,10 @@ public class StorageController {
         return service.isOrderInStorage(cart);
     }
 
-    @PostMapping("find/order/out")
+    @PostMapping("find/order/out/{customerId}")
     public Map<ProductDuplicateDTO, Integer> findOutOfStorageProduct(
             @RequestBody Map<ProductDuplicateDTO, Integer> cart,
-            @RequestParam String customerId) {
+            @PathVariable(name = "customerId") String customerId) {
         return service.findOutOfStorageProduct(cart, customerId);
     }
 

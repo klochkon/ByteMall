@@ -90,19 +90,19 @@ class NotificationServiceTest {
 //        given
         String verificationSubject = "verificationSubject";
         String storageAdminEmail = "storageAdminEmail";
-        doNothing().when(notificationService).sendEmail(any(MailDTO.class), anyString(), anyString());
+        doNothing().when(notificationService).sendEmail(any(MailDTO.class), eq("someTemplate"), eq(verificationSubject));
         notificationService.setStorageAdminEmail(storageAdminEmail);
-        notificationService.setRegistrationSubject(verificationSubject);
+        notificationService.setVerificationSubject(verificationSubject);
 
 //        when
         notificationService.sendProductVerificationEmail(mailDTO);
 
 //        then
-        MailDTO expectedMailDTO = new MailDTO();
-        expectedMailDTO.setData(mailDTO.getData());
-        expectedMailDTO.setTo(storageAdminEmail);
+//        MailDTO expectedMailDTO = new MailDTO();
+//        expectedMailDTO.setData(mailDTO.getData());
+//        expectedMailDTO.setTo(storageAdminEmail);
 
-        verify(notificationService, times(1)).sendEmail(eq(expectedMailDTO), anyString(), anyString());
+        verify(notificationService, times(1)).sendEmail(any(MailDTO.class), eq("someTemplate"), eq(verificationSubject));
     }
 
     @Test

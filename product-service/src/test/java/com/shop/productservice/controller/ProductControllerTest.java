@@ -100,10 +100,9 @@ class ProductControllerTest {
         when(productService.createProduct(any(Product.class), any())).thenReturn(product);
 
         mockMvc.perform(post("/api/v1/product/create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(photos))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+//                        .content(new ObjectMapper().writeValueAsString(photos))
                         .content(new ObjectMapper().writeValueAsString(product)))
-
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
 

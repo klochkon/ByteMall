@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -52,7 +53,9 @@ class SaleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(sale)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(sale)));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.customerId").value("101"))
+                .andExpect(jsonPath("$.sale").value(10));
 
         verify(saleService, times(1)).updateSale(any(Sale.class));
     }
@@ -65,7 +68,9 @@ class SaleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(sale)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(sale)));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.customerId").value("101"))
+                .andExpect(jsonPath("$.sale").value(10));
 
         verify(saleService, times(1)).saveSale(any(Sale.class));
     }
@@ -86,7 +91,9 @@ class SaleControllerTest {
 
         mockMvc.perform(get("/api/v1/sale/find/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(sale)));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.customerId").value("101"))
+                .andExpect(jsonPath("$.sale").value(10));
 
         verify(saleService, times(1)).findSaleById(anyString());
     }
@@ -98,7 +105,10 @@ class SaleControllerTest {
 
         mockMvc.perform(get("/api/v1/sale/find/all/202"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(sales)));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").exists())
+                .andExpect(jsonPath("$[0].customerId").value("101"))
+                .andExpect(jsonPath("$[0].sale").value(10));
 
         verify(saleService, times(1)).findAllByCustomerId("202");
     }

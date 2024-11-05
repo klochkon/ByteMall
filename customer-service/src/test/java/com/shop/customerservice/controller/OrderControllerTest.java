@@ -16,9 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,14 +39,10 @@ class OrderControllerTest {
 
     @BeforeEach
     void setUp() {
-        Map<Long, Integer> cart = new HashMap<>();
-        cart.put(1L, 1);
-        cart.put(2L, 2);
         order = Order.builder()
                 .id(new ObjectId())
                 .customerId("id")
                 .cost(new BigDecimal(1000))
-                .cart(cart)
                 .build();
 
         orderWithProductCartDTO = OrderWithProductCartDTO.builder()
@@ -69,22 +63,28 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(orderWithProductCartDTO)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(order)));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.customerId").value("customerId"))
+                .andExpect(jsonPath("$.cost").value(1000))
+                .andExpect(jsonPath("$.cart[2]").value(2));
 
         verify(orderService, times(1)).saveOrder(any(OrderWithProductCartDTO.class));
     }
 
     @Test
     void testUpdateOrder() throws Exception {
-        when(orderService.updateOrder(any(Order.class))).thenReturn(order);
+        when(orderService.updateOrder(any(OrderWithProductCartDTO.class))).thenReturn(order);
 
         mockMvc.perform(put("/api/v1/order/update")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(order)))
+                        .content(new ObjectMapper().writeValueAsString(orderWithProductCartDTO)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(order)));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.customerId").value("customerId"))
+                .andExpect(jsonPath("$.cost").value(1000))
+                .andExpect(jsonPath("$.cart[2]").value(2));
 
-        verify(orderService, times(1)).updateOrder(any(Order.class));
+        verify(orderService, times(1)).updateOrder(any(OrderWithProductCartDTO.class));
     }
 
     @Test
@@ -113,7 +113,7 @@ class OrderControllerTest {
         List<OrderWithProductCartDTO> orders = List.of(orderWithProductCartDTO);
         when(orderService.findAllByCustomerId(anyString())).thenReturn(orders);
 
-        mockMvc.perform(get("/api/v1/order/find/customerId"))
+        mockMvc.perform(get("/api/v1/order/find/customer/customerId"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(orders)));
 

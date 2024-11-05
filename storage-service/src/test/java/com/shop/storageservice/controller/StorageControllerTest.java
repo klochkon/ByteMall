@@ -1,7 +1,6 @@
 package com.shop.storageservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shop.storageservice.dto.CartDTO;
 import com.shop.storageservice.dto.OrderWithProductCartDTO;
 import com.shop.storageservice.dto.ProductDuplicateDTO;
 import com.shop.storageservice.dto.ProductWithQuantityDTO;
@@ -44,6 +43,8 @@ class StorageControllerTest {
     private Storage storage;
     private ProductWithQuantityDTO productWithQuantityDTO;
 
+    private Map<ProductDuplicateDTO, Integer> cart;
+
     @BeforeEach
     void setUp() {
         productDuplicateDTO = ProductDuplicateDTO.builder()
@@ -56,10 +57,13 @@ class StorageControllerTest {
                 .feedBack(BigDecimal.valueOf(4.5))
                 .build();
 
+        cart = new HashMap<>();
+
+
+
         orderDuplicateDTO = OrderWithProductCartDTO.builder()
                 .id("order1")
                 .customerId("customer1")
-                .cart(new HashMap<>())
                 .cost(BigDecimal.valueOf(100))
                 .build();
 
@@ -142,7 +146,7 @@ class StorageControllerTest {
     void testReduceQuantityById() throws Exception {
         doNothing().when(storageService).reduceQuantityById(any(OrderWithProductCartDTO.class));
         mockMvc.perform(put("/api/v1/storage/delete")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(new ObjectMapper().writeValueAsString(orderDuplicateDTO)))
                 .andExpect(status().isOk());
 
@@ -152,15 +156,14 @@ class StorageControllerTest {
     @Test
     void testIsOrderInStorage() throws Exception {
         when(storageService.isOrderInStorage(any())).thenReturn(true);
-        Map<ProductDuplicateDTO, Integer> cart
 
         mockMvc.perform(post("/api/v1/storage/check/order")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(cartDTO)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(new ObjectMapper().writeValueAsString(cart)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
 
-        verify(storageService, times(1)).isOrderInStorage(cartDTO);
+        verify(storageService, times(1)).isOrderInStorage(cart);
     }
 
     @Test
@@ -169,13 +172,13 @@ class StorageControllerTest {
 
         when(storageService.findOutOfStorageProduct(cart, "customer1")).thenReturn(expectedResponse);
 
-        mockMvc.perform(post("/api/v1/storage/find/order/out?customerId=customer1")
-                        .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/storage/find/order/out/customerId")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(new ObjectMapper().writeValueAsString(cart)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(expectedResponse)));
 
-        verify(storageService, times(1)).findOutOfStorageProduct(cart, "customer1");
+        verify(storageService, times(1)).findOutOfStorageProduct(cart, "customerId");
     }
 
     @Test

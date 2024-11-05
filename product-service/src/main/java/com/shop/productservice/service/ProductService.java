@@ -35,7 +35,7 @@ public class ProductService {
     private final ImageURLRepository urlRepository;
     private final AmazonS3 amazonS3;
 
-    @Value("${aws.s3.bucket-name}")
+    @Value("${spring.cloud.aws.s3.bucket-name}")
     private String bucketName;
     private final KafkaTemplate<String, MailDTO> kafkaVerification;
 

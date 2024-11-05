@@ -5,6 +5,7 @@ import com.shop.productservice.dto.*;
 import com.shop.productservice.model.Product;
 import com.shop.productservice.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +29,7 @@ public class ProductController {
         return service.groupNameIdentifier(listOrders);
     }
 
-    @PostMapping("create")
+    @PostMapping(value = "create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public Product createProduct(@RequestBody Product product,
                                  @RequestBody List<MultipartFile> photos) throws IOException {
         return service.createProduct(product, photos);
@@ -36,7 +37,7 @@ public class ProductController {
 
 
 
-    @PutMapping("update")
+    @PutMapping(value = "update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public Product updateProduct(@RequestBody Product product,
                                  @RequestBody List<MultipartFile> photos) throws IOException {
         return service.updateProduct(product, photos);

@@ -19,12 +19,12 @@ public class PurchaseController {
 
     private final PurchaseService service;
 
-    @PostMapping(value = "operation", consumes = { MediaType.APPLICATION_JSON_VALUE, "application/json;charset=UTF-8" })
+    @PostMapping(value = "operation", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public InventoryStatusDTO purchase(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         return service.purchase(orderDuplicateDTO);
     }
 
-    @PostMapping(value = "mail/send", consumes = { MediaType.APPLICATION_JSON_VALUE, "application/json;charset=UTF-8" })
+    @PostMapping(value = "mail/send", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void purchaseMailSend(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         service.purchaseMailSend(orderDuplicateDTO);
     }

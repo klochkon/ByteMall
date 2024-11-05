@@ -80,10 +80,11 @@ class OrderServiceTest {
     void updateOrder() {
         when(repository.save(any(Order.class))).thenReturn(order);
 
-        Order updatedOrder = orderService.updateOrder(order);
+        Order updatedOrder = orderService.updateOrder(orderWithProductCartDTO);
 
         verify(repository).save(order);
         assertEquals(order.getCustomerId(), updatedOrder.getCustomerId());
+        assertEquals(orderWithProductCartDTO.getCost(), updatedOrder.getCost());
     }
 
     @Test

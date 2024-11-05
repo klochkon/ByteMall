@@ -27,11 +27,13 @@ public class OrderService {
 
     private final OrderRepository repository;
     private final ProductClient productClient;
+    private Map<Long, Integer> cartWithId;
 
+    @CachePut(value = {"order", "allOrders"}, key = "#orderDuplicateDTO.id")
     @KafkaListener(topics = "order-topic", groupId = "${spring.kafka.consumer-groups.order-group.group-id}")
     public Order saveOrder(OrderWithProductCartDTO orderDuplicateDTO) {
         log.info("Received order for saving: {}", orderDuplicateDTO);
-        Map<Long, Integer> cartWithId = new HashMap<>();
+        cartWithId = new HashMap<>();
         for (Map.Entry<ProductDuplicateDTO, Integer> entry : orderDuplicateDTO.getCart().entrySet()) {
             cartWithId.put(entry.getKey().getId(), entry.getValue());
         }
@@ -47,12 +49,21 @@ public class OrderService {
         return savedOrder;
     }
 
-    @CachePut(value = {"order", "allOrders"}, key = "#order.id")
-    public Order updateOrder(Order order) {
-        log.info("Updating order: {}", order);
-        Order updatedOrder = repository.save(order);
-        log.info("Order updated successfully: {}", updatedOrder);
-        return updatedOrder;
+    @CachePut(value = {"order", "allOrders"}, key = "#orderDuplicateDTO.id")
+    public Order updateOrder(OrderWithProductCartDTO orderDuplicateDTO) {
+        log.info("Updating order: {}", orderDuplicateDTO);
+        cartWithId = new HashMap<>();
+        for (Map.Entry<ProductDuplicateDTO, Integer> entry : orderDuplicateDTO.getCart().entrySet()) {
+            cartWithId.put(entry.getKey().getId(), entry.getValue());
+        }
+        Order order = Order.builder()
+                .id(new ObjectId(orderDuplicateDTO.getId()))
+                .cart(cartWithId)
+                .customerId(orderDuplicateDTO.getCustomerId())
+                .cost(orderDuplicateDTO.getCost())
+                .build();
+        log.info("Order updated successfully: {}", order);
+        return order;
     }
 
     @CacheEvict(value = {"order", "allOrders"}, key = "#id")

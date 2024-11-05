@@ -144,12 +144,10 @@ class StorageServiceTest {
     void isOrderInStorage() {
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
         cart.put(productDuplicateDTO, 5);
-        CartDTO cartDTO = new CartDTO();
-        cartDTO.setCart(cart);
 
         when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
 
-        Boolean result = service.isOrderInStorage(cartDTO);
+        Boolean result = service.isOrderInStorage(cart);
 
         assertTrue(result);
     }
