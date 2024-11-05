@@ -59,7 +59,7 @@ public class StorageController {
     }
 
     @PostMapping(value = "check/order",consumes = {"application/json", "application/json;charset=UTF-8"}, produces = "application/json")
-    public Boolean isOrderInStorage(@RequestBody CartDTO cart) {
+    public Boolean isOrderInStorage(@RequestBody Map<ProductDuplicateDTO, Integer> cart) {
         return service.isOrderInStorage(cart);
     }
 

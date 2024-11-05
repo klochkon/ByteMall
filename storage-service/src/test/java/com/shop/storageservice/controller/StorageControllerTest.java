@@ -10,7 +10,6 @@ import com.shop.storageservice.service.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -43,7 +42,6 @@ class StorageControllerTest {
     private ProductDuplicateDTO productDuplicateDTO;
     private OrderWithProductCartDTO orderDuplicateDTO;
     private Storage storage;
-    private Map<ProductDuplicateDTO, Integer> cart;
     private ProductWithQuantityDTO productWithQuantityDTO;
 
     @BeforeEach
@@ -66,9 +64,6 @@ class StorageControllerTest {
                 .build();
 
         storage = new Storage();
-
-        cart = new HashMap<>();
-        cart.put(productDuplicateDTO, 2);
 
         productWithQuantityDTO = ProductWithQuantityDTO.builder()
                 .id(1L)
@@ -157,8 +152,7 @@ class StorageControllerTest {
     @Test
     void testIsOrderInStorage() throws Exception {
         when(storageService.isOrderInStorage(any())).thenReturn(true);
-        CartDTO cartDTO = new CartDTO();
-        cartDTO.setCart(cart);
+        Map<ProductDuplicateDTO, Integer> cart
 
         mockMvc.perform(post("/api/v1/storage/check/order")
                         .contentType(MediaType.APPLICATION_JSON)
