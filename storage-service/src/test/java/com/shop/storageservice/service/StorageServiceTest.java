@@ -182,25 +182,32 @@ class StorageServiceTest {
 
     @Test
     void findOutOfStorageProduct() {
+//        given
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
         cart.put(productDuplicateDTO, 15);
 
+//        when
         Map<ProductDuplicateDTO, Integer> result = service.findOutOfStorageProduct(cart, "1L");
 
+//        then
         assertTrue(result.containsKey(productDuplicateDTO));
     }
 
     @Test
     void productVerification() {
+//        given
         when(repository.findAll()).thenReturn(Collections.singletonList(storage));
 
+//        when
         service.productVerification();
 
+//        then
         verify(kafkaProductVerification, times(1)).send(eq("product-name-identifier-topic"), anyList());
     }
 
     @Test
     void reduceQuantityById() {
+//        given
         OrderWithProductCartDTO orderDuplicateDTO = new OrderWithProductCartDTO();
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
         cart.put(productDuplicateDTO, 1);
@@ -216,13 +223,14 @@ class StorageServiceTest {
         cart.put(productDuplicateDTO2, 2);
         orderDuplicateDTO.setCart(cart);
 
-
         Query queryMock = mock(Query.class);
         when(entityManager.createNativeQuery(anyString())).thenReturn(queryMock);
         when(queryMock.executeUpdate()).thenReturn(1);
 
+//        when
         service.reduceQuantityById(orderDuplicateDTO);
 
+//        then
         verify(entityManager, times(2)).createNativeQuery(anyString());
         verify(queryMock, times(2)).executeUpdate();
     }

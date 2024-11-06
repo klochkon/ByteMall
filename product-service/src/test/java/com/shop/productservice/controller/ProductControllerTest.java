@@ -40,6 +40,12 @@ class ProductControllerTest {
 
     private List<MultipartFile> photos;
 
+    private ProductSaveRequest request;
+
+    private MockMultipartFile photo1;
+
+    private MockMultipartFile photo2;
+
     @BeforeEach
     void setUp() {
         product = Product.builder()
@@ -50,14 +56,14 @@ class ProductControllerTest {
                 .description("Test Description")
                 .build();
 
-        MockMultipartFile photo1 = new MockMultipartFile(
+        photo1 = new MockMultipartFile(
                 "photos",
                 "photo1.jpg",
                 "image/jpeg",
                 "Test Image Content 1".getBytes()
         );
 
-        MockMultipartFile photo2 = new MockMultipartFile(
+        photo2 = new MockMultipartFile(
                 "photos",
                 "photo2.jpg",
                 "image/jpeg",
@@ -65,6 +71,12 @@ class ProductControllerTest {
         );
 
         photos = List.of(photo1, photo2);
+
+        request = ProductSaveRequest.builder()
+                .photos(photos)
+                .product(product)
+                .build();
+
     }
 
     @Test
@@ -107,9 +119,11 @@ class ProductControllerTest {
         when(productService.createProduct(any(Product.class), any())).thenReturn(product);
 
 //        when
-        mockMvc.perform(post("/api/v1/product/create")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(new ObjectMapper().writeValueAsString(product)))
+        mockMvc.perform(multipart("/api/v1/product/create")
+                        .file(photo1)
+                        .file(photo2)
+                        .param("product", new ObjectMapper().writeValueAsString(product))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
 
@@ -122,11 +136,13 @@ class ProductControllerTest {
 //        given
         when(productService.updateProduct(any(Product.class), any())).thenReturn(product);
 
+
 //        when
-        mockMvc.perform(put("/api/v1/product/update")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(photos))
-                        .content(new ObjectMapper().writeValueAsString(product)))
+        mockMvc.perform(multipart("/api/v1/product/update")
+                        .file(photo1)
+                        .file(photo2)
+                        .param("product", new ObjectMapper().writeValueAsString(product))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(product)));
 

@@ -27,7 +27,7 @@
       <module name="customer-service" options="-parameters" />
       <module name="main-service" options="-parameters" />
       <module name="notification-service" options="-parameters" />
-      <module name="product-service" options="" />
+      <module name="product-service" options="-parameters" />
       <module name="purchase-service" options="-parameters" />
       <module name="storage-service" options="-parameters" />
     </option>
