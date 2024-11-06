@@ -92,67 +92,91 @@ class StorageServiceTest {
 
     @Test
     void saveProduct() {
-        doNothing().when(repository).save(anyInt(), any());
+//        given
+        doNothing().when(repository).save(any());
+
+//        when
         service.saveProduct(100, productDuplicateDTO);
 
+//        then
         verify(repository, times(1)).save(any(Storage.class));
     }
 
     @Test
     void updateProduct() {
+//        given
+        doNothing().when(repository).save(any());
+
+//        when
         service.updateProduct(200, productDuplicateDTO);
 
+//        then
         verify(repository, times(1)).save(any(Storage.class));
     }
 
     @Test
     void findAllStorageWithQuantity() {
-
+//        given
         when(repository.findAll()).thenReturn(Collections.singletonList(storage));
         when(productClient.getAllProductWithQuantity(anyList())).thenReturn(new ArrayList<>());
 
+//        when
         List<ProductWithQuantityDTO> result = service.findAllStorageWithQuantity();
 
+//        then
         assertEquals(0, result.size());
         verify(repository, times(1)).findAll();
     }
 
     @Test
     void deleteById() {
+//        given
+        doNothing().when(repository).deleteById(anyLong());
+
+//        when
         service.deleteById(1L);
 
+//        then
         verify(repository, times(1)).deleteById(1L);
     }
 
     @Test
     void findById() {
+//        given
         when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
 
+//        when
         Storage result = service.findById(1L);
 
+//        then
         assertEquals(storage, result);
         verify(repository, times(1)).findById(1L);
     }
 
     @Test
     void isInStorage() {
+//        given
         when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
 
+//        when
         Boolean result = service.isInStorage(1L, 50);
 
+//        then
         assertFalse(result);
         verify(repository, times(1)).findById(1L);
     }
 
     @Test
     void isOrderInStorage() {
+//        given
         Map<ProductDuplicateDTO, Integer> cart = new HashMap<>();
         cart.put(productDuplicateDTO, 5);
-
         when(repository.findById(anyLong())).thenReturn(Optional.of(storage));
 
+//        when
         Boolean result = service.isOrderInStorage(cart);
 
+//        then
         assertTrue(result);
     }
 

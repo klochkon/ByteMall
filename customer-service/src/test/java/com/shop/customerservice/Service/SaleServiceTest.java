@@ -41,10 +41,13 @@ class SaleServiceTest {
 
     @Test
     void saveSale() {
+//        given
         when(repository.save(any(Sale.class))).thenReturn(sale);
 
+//        when
         Sale savedSale = saleService.saveSale(sale);
 
+//        then
         verify(repository).save(sale);
         assertNotNull(savedSale);
         assertEquals(sale.getId(), savedSale.getId());
@@ -52,10 +55,13 @@ class SaleServiceTest {
 
     @Test
     void updateSale() {
+//        given
         when(repository.save(any(Sale.class))).thenReturn(sale);
 
+//        when
         Sale updatedSale = saleService.updateSale(sale);
 
+//        then
         verify(repository).save(sale);
         assertNotNull(updatedSale);
         assertEquals(sale.getId(), updatedSale.getId());
@@ -63,29 +69,38 @@ class SaleServiceTest {
 
     @Test
     void deleteSaleById() {
+//        given
         doNothing().when(repository).deleteById(any(ObjectId.class));
 
+//        when
         saleService.deleteSaleById(sale.getId().toHexString());
 
+//        then
         verify(repository).deleteById(sale.getId());
     }
 
     @Test
     void findSaleById() {
+//        given
         when(repository.findById(any(ObjectId.class))).thenReturn(Optional.of(sale));
 
+//        when
         Sale foundSale = saleService.findSaleById(sale.getId().toHexString());
 
+//        then
         assertNotNull(foundSale);
         assertEquals(sale.getId(), foundSale.getId());
     }
 
     @Test
     void findAllByCustomerId() {
+//        given
         when(repository.findAllByCustomerId(any(ObjectId.class))).thenReturn(List.of(sale));
 
+//        when
         List<Sale> sales = saleService.findAllByCustomerId(new ObjectId().toHexString());
 
+//        then
         assertNotNull(sales);
         assertEquals(1, sales.size());
         assertEquals(sale.getId(), sales.get(0).getId());
@@ -93,6 +108,7 @@ class SaleServiceTest {
 
     @Test
     void saveSaleDTO() {
+//        given
         SaleDuplicateDTO saleDuplicateDTO = new SaleDuplicateDTO();
         saleDuplicateDTO.setId(sale.getId().toHexString());
         saleDuplicateDTO.setSale(new BigDecimal("100.0"));
@@ -100,8 +116,10 @@ class SaleServiceTest {
 
         when(repository.save(any(Sale.class))).thenReturn(sale);
 
+//        when
         Sale savedSale = saleService.saveSaleDTO(saleDuplicateDTO);
 
+//        then
         verify(repository).save(any(Sale.class));
         assertNotNull(savedSale);
         assertEquals(sale.getId(), savedSale.getId());
