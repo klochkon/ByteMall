@@ -93,7 +93,7 @@ class StorageServiceTest {
     @Test
     void saveProduct() {
 //        given
-        doNothing().when(repository).save(any());
+        when(repository.save(any())).thenReturn(storage);
 
 //        when
         service.saveProduct(100, productDuplicateDTO);
@@ -105,7 +105,7 @@ class StorageServiceTest {
     @Test
     void updateProduct() {
 //        given
-        doNothing().when(repository).save(any());
+        when(repository.save(any())).thenReturn(storage);
 
 //        when
         service.updateProduct(200, productDuplicateDTO);
@@ -196,7 +196,7 @@ class StorageServiceTest {
     @Test
     void productVerification() {
 //        given
-        when(repository.findAll()).thenReturn(Collections.singletonList(storage));
+        when(repository.findAll()).thenReturn(List.of(storage));
 
 //        when
         service.productVerification();

@@ -1,6 +1,7 @@
 package com.shop.storageservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shop.storageservice.dto.CartDTO;
 import com.shop.storageservice.dto.OrderWithProductCartDTO;
 import com.shop.storageservice.dto.ProductDuplicateDTO;
 import com.shop.storageservice.dto.ProductWithQuantityDTO;
@@ -45,6 +46,8 @@ class StorageControllerTest {
 
     private Map<ProductDuplicateDTO, Integer> cart;
 
+    private CartDTO cartDTO;
+
     @BeforeEach
     void setUp() {
         productDuplicateDTO = ProductDuplicateDTO.builder()
@@ -58,8 +61,8 @@ class StorageControllerTest {
                 .build();
 
         cart = new HashMap<>();
-
-
+        cartDTO = new CartDTO();
+        cartDTO.setCart(cart);
 
         orderDuplicateDTO = OrderWithProductCartDTO.builder()
                 .id("order1")
@@ -190,7 +193,7 @@ class StorageControllerTest {
 //        when
         mockMvc.perform(post("/api/v1/storage/check/order")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(new ObjectMapper().writeValueAsString(cart)))
+                        .content(new ObjectMapper().writeValueAsString(cartDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
 
@@ -207,7 +210,7 @@ class StorageControllerTest {
 //        when
         mockMvc.perform(post("/api/v1/storage/find/order/out/customerId")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(new ObjectMapper().writeValueAsString(cart)))
+                        .content(new ObjectMapper().writeValueAsString(cartDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(expectedResponse)));
 
@@ -217,7 +220,7 @@ class StorageControllerTest {
 
     @Test
     void testFindAllStorageWithQuantity() throws Exception {
-//        givem
+//        given
         List<ProductWithQuantityDTO> expectedResponse = List.of(productWithQuantityDTO);
         when(storageService.findAllStorageWithQuantity()).thenReturn(expectedResponse);
 

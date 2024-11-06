@@ -70,12 +70,12 @@ The service processes order details received from the `purchase-service` via Kaf
 ### `GET /api/v1/storage/check/order`
 **Description**: Verifies if all products in an order are in stock.  
 **Parameters**:
-- `cart`: Map of products and their quantities.
+- `cartDTO`: DTO with map of products and their quantities.
 
 ### `GET /api/v1/storage/find/order/out`
 **Description**: Finds products that are out of stock in a given order.  
 **Parameters**:
-- `cart`: Map of products and their quantities.
+- `cartDTO`: DTO with map of products and their quantities.
 - `customerId`: The customer ID.
 
 ### `GET /api/v1/storage/find/all`

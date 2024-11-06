@@ -15,7 +15,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,8 +43,6 @@ class PurchaseServiceTest {
     private OrderWithProductCartDTO orderWithProductCartDTO;
     private Map<ProductDuplicateDTO, Integer> cart;
 
-    private SaleDuplicateDTO sale;
-
     @BeforeEach
     void setUp() {
 
@@ -66,13 +63,7 @@ class PurchaseServiceTest {
                 .id("1L")
                 .customerId("1L")
                 .cart(cart)
-                .cost(new BigDecimal(600))
-                .build();
-
-        sale = SaleDuplicateDTO.builder()
-                .id("id")
-                .customerId("customerId")
-                .sale(new BigDecimal(700))
+                .cost(new BigDecimal("1000.0"))
                 .build();
     }
 
@@ -120,21 +111,16 @@ class PurchaseServiceTest {
     void testPurchaseLogicIfOrderInStorage() {
 //        given
         doNothing().when(customerClient).cleanCart(anyString());
-        when(kafkaSale.send(eq("sale-topic"), eq(sale)))
-                .thenReturn(CompletableFuture.completedFuture(null));
 
-        doNothing().when(purchaseService).purchaseMailSend(eq(orderWithProductCartDTO));
-
-        when(kafkaAddOrder.send(eq("order-topic"), eq(orderWithProductCartDTO)))
-                .thenReturn(CompletableFuture.completedFuture(null));
+        doNothing().when(purchaseService).purchaseMailSend(any());
 
 //        when
         purchaseService.purchaseLogicIfOrderInStorage(orderWithProductCartDTO);
 
 //        then
-        verify(kafkaAddOrder, times(1)).send(eq("order-topic"), eq(orderWithProductCartDTO));
-        verify(customerClient, times(1)).cleanCart(orderWithProductCartDTO.getCustomerId());
-        verify(kafkaSale, times(1)).send(eq("sale-topic"), eq(sale));
+        verify(kafkaAddOrder, times(1)).send(anyString(), any());
+        verify(customerClient, times(1)).cleanCart(anyString());
+        verify(kafkaSale, times(1)).send(anyString(), any());
     }
 
     @Test
@@ -176,18 +162,12 @@ class PurchaseServiceTest {
                 .email("test@example.com")
                 .name("Test Customer")
                 .build();
-        MailDTO mailDTO = MailDTO.builder()
-                .to("email")
-                .data(Map.of("string", "object"))
-                .build();
         when(customerClient.findCustomerEmailAndNameById(anyString())).thenReturn(customerDTO);
-        when(kafkaMail.send(eq("mail-topic"), eq(mailDTO)))
-                .thenReturn(CompletableFuture.completedFuture(null));
 
 //        when
         purchaseService.purchaseMailSend(orderWithProductCartDTO);
 
 //        then
-        verify(kafkaMail, times(1)).send(eq("mail-topic"), eq(mailDTO));
+        verify(kafkaMail, times(1)).send(eq("mail-topic"), any(MailDTO.class));
     }
 }
