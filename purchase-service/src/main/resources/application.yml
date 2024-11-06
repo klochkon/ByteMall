@@ -12,8 +12,3 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
-  http:
-    encoding:
-      charset: UTF-8
-      enabled: true
-      force: true
