@@ -67,10 +67,13 @@ class OrderServiceTest {
 
     @Test
     void saveOrder() {
+//        given
         when(repository.save(any(Order.class))).thenReturn(order);
 
+//        when
         Order savedOrder = orderService.saveOrder(orderWithProductCartDTO);
 
+//        then
         verify(repository).save(any(Order.class));
         assertEquals(orderWithProductCartDTO.getCustomerId(), savedOrder.getCustomerId());
         assertEquals(orderWithProductCartDTO.getCost(), savedOrder.getCost());
@@ -78,10 +81,13 @@ class OrderServiceTest {
 
     @Test
     void updateOrder() {
+//        given
         when(repository.save(any(Order.class))).thenReturn(order);
 
+//        when
         Order updatedOrder = orderService.updateOrder(orderWithProductCartDTO);
 
+//        then
         verify(repository).save(order);
         assertEquals(order.getCustomerId(), updatedOrder.getCustomerId());
         assertEquals(orderWithProductCartDTO.getCost(), updatedOrder.getCost());
@@ -89,20 +95,26 @@ class OrderServiceTest {
 
     @Test
     void deleteOrderById() {
+//        given
         doNothing().when(repository).deleteById(any(ObjectId.class));
 
+//        when
         orderService.deleteOrderById(order.getId().toHexString());
 
+//        then
         verify(repository).deleteById(new ObjectId(order.getId().toHexString()));
     }
 
     @Test
     void findOrderById() {
+//        given
         when(repository.findById(any(ObjectId.class))).thenReturn(Optional.of(order));
         when(productClient.nameIdentifier(anyList())).thenReturn(List.of(productDuplicateDTO));
 
+//        when
         OrderWithProductCartDTO foundOrder = orderService.findOrderById(order.getId().toHexString());
 
+//        then
         verify(repository).findById(new ObjectId(order.getId().toHexString()));
         assertNotNull(foundOrder);
         assertEquals(order.getCustomerId(), foundOrder.getCustomerId());
@@ -110,11 +122,14 @@ class OrderServiceTest {
 
     @Test
     void findAllByCustomerId() {
+//        given
         when(repository.findAllByCustomerId(anyString())).thenReturn(List.of(order));
         when(productClient.groupNameIdentifier(anyList())).thenReturn(List.of(orderWithProductCartDTO));
 
+//        when
         List<OrderWithProductCartDTO> orders = orderService.findAllByCustomerId(order.getCustomerId());
 
+//        then
         verify(repository).findAllByCustomerId(order.getCustomerId());
         assertNotNull(orders);
         assertFalse(orders.isEmpty());

@@ -98,10 +98,6 @@ class NotificationServiceTest {
         notificationService.sendProductVerificationEmail(mailDTO);
 
 //        then
-//        MailDTO expectedMailDTO = new MailDTO();
-//        expectedMailDTO.setData(mailDTO.getData());
-//        expectedMailDTO.setTo(storageAdminEmail);
-
         verify(notificationService, times(1)).sendEmail(any(MailDTO.class), eq("someTemplate"), eq(verificationSubject));
     }
 

@@ -58,61 +58,76 @@ class CommentControllerTest {
 
     @Test
     void testFindAllByProductId() throws Exception {
+//        given
         List<Comment> comments = List.of(comment);
         when(commentService.findAllByProductId(anyLong())).thenReturn(comments);
 
+//        when
         mockMvc.perform(get("/api/v1/comment/find/product/10"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(comments)));
 
+//        then
         verify(commentService, times(1)).findAllByProductId(10L);
     }
 
     @Test
     void testAddComment() throws Exception {
+//        given
         when(commentService.addComment(any(Comment.class))).thenReturn(comment);
 
+//        when
         mockMvc.perform(post("/api/v1/comment/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(comment)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(comment)));
 
+//        then
         verify(commentService, times(1)).addComment(any(Comment.class));
     }
 
     @Test
     void testUpdateComment() throws Exception {
+//        given
         when(commentService.updateComment(any(Comment.class))).thenReturn(comment);
 
+//        when
         mockMvc.perform(put("/api/v1/comment/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(comment)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(comment)));
 
+//        then
         verify(commentService, times(1)).updateComment(any(Comment.class));
     }
 
     @Test
     void testDeleteCommentById() throws Exception {
+//        given
         doNothing().when(commentService).deleteCommentById(anyLong());
 
+//        when
         mockMvc.perform(delete("/api/v1/comment/delete/1"))
                 .andExpect(status().isOk());
 
+//        then
         verify(commentService, times(1)).deleteCommentById(1L);
     }
 
     @Test
     void testFindAllByAuthorNickname() throws Exception {
+//        given
         List<Comment> comments = List.of(comment);
         when(commentService.findAllByAuthorNickname(anyString())).thenReturn(comments);
 
+//        when
         mockMvc.perform(get("/api/v1/comment/find/author/Author1"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(comments)));
 
+//        then
         verify(commentService, times(1)).findAllByAuthorNickname("Author1");
     }
 }

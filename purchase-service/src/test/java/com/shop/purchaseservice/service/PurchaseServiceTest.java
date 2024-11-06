@@ -78,11 +78,14 @@ class PurchaseServiceTest {
 
     @Test
     void testPurchase_OrderInStorage() {
+//        given
         when(storageClient.isOrderInStorage(any())).thenReturn(true);
         doNothing().when(purchaseService).purchaseLogicIfOrderInStorage(orderWithProductCartDTO);
 
+//        when
         InventoryStatusDTO result = purchaseService.purchase(orderWithProductCartDTO);
 
+//        then
         verify(purchaseService,times(1)).purchaseLogicIfOrderInStorage(orderWithProductCartDTO);
         assertTrue(result.getIsOrderInStorage());
         verify(storageClient, times(1)).isOrderInStorage(any());
@@ -90,6 +93,7 @@ class PurchaseServiceTest {
 
     @Test
     void testPurchase_OrderNotInStorage() {
+//        given
         when(storageClient.isOrderInStorage(any())).thenReturn(false);
         Map<ProductDuplicateDTO, Integer> outOfStockProducts = Map.of(
                 ProductDuplicateDTO.builder()
@@ -104,14 +108,17 @@ class PurchaseServiceTest {
         );
         when(storageClient.findOutOfStorageProduct(cart, orderWithProductCartDTO.getCustomerId())).thenReturn(outOfStockProducts);
 
+//        when
         InventoryStatusDTO result = purchaseService.purchase(orderWithProductCartDTO);
 
+//        then
         assertFalse(result.getIsOrderInStorage());
         verify(storageClient, times(1)).findOutOfStorageProduct(cart, orderWithProductCartDTO.getCustomerId());
     }
 
     @Test
     void testPurchaseLogicIfOrderInStorage() {
+//        given
         doNothing().when(customerClient).cleanCart(anyString());
         when(kafkaSale.send(eq("sale-topic"), eq(sale)))
                 .thenReturn(CompletableFuture.completedFuture(null));
@@ -121,8 +128,10 @@ class PurchaseServiceTest {
         when(kafkaAddOrder.send(eq("order-topic"), eq(orderWithProductCartDTO)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
+//        when
         purchaseService.purchaseLogicIfOrderInStorage(orderWithProductCartDTO);
 
+//        then
         verify(kafkaAddOrder, times(1)).send(eq("order-topic"), eq(orderWithProductCartDTO));
         verify(customerClient, times(1)).cleanCart(orderWithProductCartDTO.getCustomerId());
         verify(kafkaSale, times(1)).send(eq("sale-topic"), eq(sale));
@@ -130,6 +139,7 @@ class PurchaseServiceTest {
 
     @Test
     void testPurchaseLogicIfOrderNotInStorage() {
+//        given
         Map<ProductDuplicateDTO, Integer> outOfStockProducts = Map.of(
                 ProductDuplicateDTO.builder()
                         .id(2L)
@@ -143,8 +153,10 @@ class PurchaseServiceTest {
         );
         when(storageClient.findOutOfStorageProduct(cart, orderWithProductCartDTO.getCustomerId())).thenReturn(outOfStockProducts);
 
+//        when
         Map<ProductDuplicateDTO, Integer> result = purchaseService.purchaseLogicIfOrderNotInStorage(orderWithProductCartDTO);
 
+//        then
         verify(storageClient, times(1)).findOutOfStorageProduct(cart, orderWithProductCartDTO.getCustomerId());
         assertTrue(result.containsKey(ProductDuplicateDTO.builder()
                 .id(2L)
@@ -159,6 +171,7 @@ class PurchaseServiceTest {
 
     @Test
     void testPurchaseMailSend() {
+//        given
         CustomerDTO customerDTO = CustomerDTO.builder()
                 .email("test@example.com")
                 .name("Test Customer")
@@ -171,8 +184,10 @@ class PurchaseServiceTest {
         when(kafkaMail.send(eq("mail-topic"), eq(mailDTO)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
+//        when
         purchaseService.purchaseMailSend(orderWithProductCartDTO);
 
+//        then
         verify(kafkaMail, times(1)).send(eq("mail-topic"), eq(mailDTO));
     }
 }

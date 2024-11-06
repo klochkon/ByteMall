@@ -80,14 +80,14 @@ class ProductServiceTest {
 
     @Test
     void createProductTest() throws IOException {
-
-
+//        given
         doReturn(new URL("http://mock-s3-url.com/photo1.jpg")).when(amazonS3).getUrl(anyString(), anyString());
-
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
+//        when
         Product savedProduct = productService.createProduct(product, photos);
 
+//        then
         verify(amazonS3, times(photos.size())).putObject(anyString(), anyString(), any(), any());
         verify(urlRepository, times(photos.size())).save(any(ImageURL.class));
         verify(productRepository).save(product);
@@ -98,30 +98,39 @@ class ProductServiceTest {
 
     @Test
     void findById() {
+//        given
         when(productRepository.findById(1L)).thenReturn(java.util.Optional.of(product));
 
+//        when
         Product foundProduct = productService.findById(1L);
 
+//        then
         assertNotNull(foundProduct);
         assertEquals(product.getId(), foundProduct.getId());
     }
 
     @Test
     void deleteById() {
+//        given
         when(productRepository.findById(1L)).thenReturn(java.util.Optional.of(product));
 
+//        when
         productService.deleteById(1L);
 
+//        then
         verify(amazonS3).deleteObject(anyString(), anyString());
         verify(productRepository).deleteById(1L);
     }
 
     @Test
     void getAllProductWithQuantity() {
+//        given
         when(productRepository.findAll()).thenReturn(Collections.singletonList(product));
 
+//        when
         List<ProductWithQuantityDTO> result = productService.getAllProductWithQuantity(Collections.emptyList());
 
+//        then
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(product.getId(), result.get(0).getId());
@@ -129,23 +138,29 @@ class ProductServiceTest {
 
     @Test
     void productVerification() {
+//        given
         StorageDuplicateDTO storageDuplicateDTO = new StorageDuplicateDTO();
         storageDuplicateDTO.setCustomerId("1L");
         storageDuplicateDTO.setQuantity(10);
+        ArgumentCaptor<MailDTO> mailDTOCaptor = ArgumentCaptor.forClass(MailDTO.class);
 
+//        when
         productService.productVerification(Collections.singletonList(storageDuplicateDTO));
 
-        ArgumentCaptor<MailDTO> mailDTOCaptor = ArgumentCaptor.forClass(MailDTO.class);
+//        then
         verify(kafkaTemplate).send(anyString(), mailDTOCaptor.capture());
         assertNotNull(mailDTOCaptor.getValue());
     }
 
     @Test
     void updateProduct() throws IOException {
+//        given
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
+//        when
         Product updatedProduct = productService.updateProduct(product, photos);
 
+//        then
         assertNotNull(updatedProduct);
         assertEquals(product.getId(), updatedProduct.getId());
         verify(amazonS3, times(3)).putObject(anyString(), anyString(), any(), isNull());

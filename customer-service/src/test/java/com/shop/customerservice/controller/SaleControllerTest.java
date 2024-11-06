@@ -47,8 +47,10 @@ class SaleControllerTest {
 
     @Test
     void testUpdateSale() throws Exception {
+//        given
         when(saleService.updateSale(any(Sale.class))).thenReturn(sale);
 
+//        when
         mockMvc.perform(put("/api/v1/sale/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(sale)))
@@ -57,13 +59,16 @@ class SaleControllerTest {
                 .andExpect(jsonPath("$.customerId").value("101"))
                 .andExpect(jsonPath("$.sale").value(10));
 
+//        then
         verify(saleService, times(1)).updateSale(any(Sale.class));
     }
 
     @Test
     void testSaveSale() throws Exception {
+//        given
         when(saleService.saveSale(any(Sale.class))).thenReturn(sale);
 
+//        when
         mockMvc.perform(post("/api/v1/sale/save")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(sale)))
@@ -72,37 +77,46 @@ class SaleControllerTest {
                 .andExpect(jsonPath("$.customerId").value("101"))
                 .andExpect(jsonPath("$.sale").value(10));
 
+//        then
         verify(saleService, times(1)).saveSale(any(Sale.class));
     }
 
     @Test
     void testDeleteSaleById() throws Exception {
+//        given
         doNothing().when(saleService).deleteSaleById(anyString());
 
+//        when
         mockMvc.perform(delete("/api/v1/sale/delete/1"))
                 .andExpect(status().isOk());
 
+//        then
         verify(saleService, times(1)).deleteSaleById("1");
     }
 
     @Test
     void testFindSaleById() throws Exception {
+//        given
         when(saleService.findSaleById(anyString())).thenReturn(sale);
 
+//        when
         mockMvc.perform(get("/api/v1/sale/find/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.customerId").value("101"))
                 .andExpect(jsonPath("$.sale").value(10));
 
+//        then
         verify(saleService, times(1)).findSaleById(anyString());
     }
 
     @Test
     void testFindAllByCustomerId() throws Exception {
+//        given
         List<Sale> sales = List.of(sale);
         when(saleService.findAllByCustomerId(anyString())).thenReturn(sales);
 
+//        when
         mockMvc.perform(get("/api/v1/sale/find/all/202"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
@@ -110,6 +124,7 @@ class SaleControllerTest {
                 .andExpect(jsonPath("$[0].customerId").value("101"))
                 .andExpect(jsonPath("$[0].sale").value(10));
 
+//        then
         verify(saleService, times(1)).findAllByCustomerId("202");
     }
 }

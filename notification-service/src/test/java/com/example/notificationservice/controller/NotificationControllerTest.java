@@ -12,7 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,41 +42,61 @@ public class NotificationControllerTest {
 
     @Test
     public void testSendPurchaseEmail() throws Exception {
+//        given
         doNothing().when(service).sendPurchaseEmail(mailDTO);
 
+//        when
         mockMvc.perform(post("/api/v1/notification/send/purchase/test@example.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
+
+//        then
+        verify(service, times(1)).sendPurchaseEmail(mailDTO);
     }
 
     @Test
     public void testSendRegistrationEmail() throws Exception {
+//        given
         doNothing().when(service).sendRegistrationEmail(mailDTO);
 
+//        when
         mockMvc.perform(post("/api/v1/notification/send/registration/test@example.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
+
+//        then
+        verify(service, times(1)).sendRegistrationEmail(mailDTO);
     }
 
     @Test
     public void testSendProductVerificationEmail() throws Exception {
+//        given
         doNothing().when(service).sendProductVerificationEmail(mailDTO);
 
+//        when
         mockMvc.perform(post("/api/v1/notification/send/verification")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
+
+//        then
+        verify(service, times(1)).sendProductVerificationEmail(mailDTO);
     }
 
     @Test
     public void testSendUpdateStorageEmail() throws Exception {
+//         given
         doNothing().when(service).sendUpdateStorageEmail(mailDTO);
 
+//        when
         mockMvc.perform(post("/api/v1/notification/send/storage/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(mailDTO)))
                 .andExpect(status().isOk());
+
+//        then
+        verify(service, times(1)).sendUpdateStorageEmail(mailDTO);
     }
 }

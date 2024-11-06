@@ -83,113 +83,150 @@ class StorageControllerTest {
 
     @Test
     void testIsInStorage() throws Exception {
+//        given
         when(storageService.isInStorage(anyLong(), anyInt())).thenReturn(true);
 
+//        when
         mockMvc.perform(get("/api/v1/storage/check")
                         .param("id", "1")
                         .param("requiredQuantity", "10"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
 
+//        then
         verify(storageService, times(1)).isInStorage(1L, 10);
     }
 
     @Test
     void testSaveProduct() throws Exception {
+//        given
+        doNothing().when(storageService).saveProduct(anyInt(), any());
+
+//        when
         mockMvc.perform(post("/api/v1/storage/save/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(productDuplicateDTO)))
                 .andExpect(status().isOk());
 
+//        then
         verify(storageService, times(1)).saveProduct(10, productDuplicateDTO);
     }
 
     @Test
     void testUpdateProduct() throws Exception {
+//        given
+        doNothing().when(storageService).updateProduct(anyInt(), any());
+
+//        when
         mockMvc.perform(put("/api/v1/storage/save/5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(productDuplicateDTO)))
                 .andExpect(status().isOk());
 
+//        then
         verify(storageService, times(1)).updateProduct(5, productDuplicateDTO);
     }
 
     @Test
     void testFindById() throws Exception {
+//        given
         when(storageService.findById(anyLong())).thenReturn(storage);
 
+//        when
         mockMvc.perform(get("/api/v1/storage/find/1"))
                 .andExpect(status().isOk());
 
+//        then
         verify(storageService, times(1)).findById(1L);
     }
 
     @Test
     void testDeleteById() throws Exception {
+//        given
+        doNothing().when(storageService).deleteById(anyLong());
+//        when
         mockMvc.perform(delete("/api/v1/storage/delete/1"))
                 .andExpect(status().isOk());
 
+//        then
         verify(storageService, times(1)).deleteById(1L);
     }
 
     @Test
     void raiseProductQuantityById() throws Exception {
+//        given
+        doNothing().when(storageService).raiseProductQuantityById(any(), anyInt());
+
+//        when
         mockMvc.perform(post("/api/v1/storage/add?quantityAdded=5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(productDuplicateDTO)))
                 .andExpect(status().isOk());
 
+//        then
         verify(storageService, times(1)).raiseProductQuantityById(productDuplicateDTO, 5);
     }
 
     @Test
     void testReduceQuantityById() throws Exception {
+//        given
         doNothing().when(storageService).reduceQuantityById(any(OrderWithProductCartDTO.class));
+
+//        when
         mockMvc.perform(put("/api/v1/storage/delete")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(new ObjectMapper().writeValueAsString(orderDuplicateDTO)))
                 .andExpect(status().isOk());
 
+//        then
         verify(storageService, times(1)).reduceQuantityById(orderDuplicateDTO);
     }
 
     @Test
     void testIsOrderInStorage() throws Exception {
+//        given
         when(storageService.isOrderInStorage(any())).thenReturn(true);
 
+//        when
         mockMvc.perform(post("/api/v1/storage/check/order")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(new ObjectMapper().writeValueAsString(cart)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
 
+//        then
         verify(storageService, times(1)).isOrderInStorage(cart);
     }
 
     @Test
     void testFindOutOfStorageProduct() throws Exception {
+//        given
         Map<ProductDuplicateDTO, Integer> expectedResponse = new HashMap<>();
-
         when(storageService.findOutOfStorageProduct(cart, "customer1")).thenReturn(expectedResponse);
 
+//        when
         mockMvc.perform(post("/api/v1/storage/find/order/out/customerId")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(new ObjectMapper().writeValueAsString(cart)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(expectedResponse)));
 
+//        then
         verify(storageService, times(1)).findOutOfStorageProduct(cart, "customerId");
     }
 
     @Test
     void testFindAllStorageWithQuantity() throws Exception {
+//        givem
         List<ProductWithQuantityDTO> expectedResponse = List.of(productWithQuantityDTO);
         when(storageService.findAllStorageWithQuantity()).thenReturn(expectedResponse);
 
+//        when
         mockMvc.perform(get("/api/v1/storage/find/all"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(expectedResponse)));
 
+//        then
         verify(storageService, times(1)).findAllStorageWithQuantity();
     }
 }

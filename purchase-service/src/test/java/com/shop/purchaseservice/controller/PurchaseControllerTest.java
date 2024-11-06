@@ -44,30 +44,35 @@ class PurchaseControllerTest {
 
     @Test
     void testPurchaseOperation() throws Exception {
+//        given
         OrderWithProductCartDTO orderDuplicateDTO = new OrderWithProductCartDTO();
         InventoryStatusDTO expectedInventoryStatusDTO = new InventoryStatusDTO();
         expectedInventoryStatusDTO.setIsOrderInStorage(true);
 
         when(service.purchase(orderDuplicateDTO)).thenReturn(expectedInventoryStatusDTO);
 
-
+//        when
         mockMvc.perform(post("/api/v1/purchase/operation")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType("application/json;charset=UTF-8")
                         .content(new ObjectMapper().writeValueAsString(orderWithProductCartDTO)))
                 .andExpect(status().isOk());
 
+//        then
         verify(service, times(1)).purchase(orderWithProductCartDTO);
     }
 
     @Test
     void testPurchaseMailSend() throws Exception {
+//        given
         doNothing().when(service).purchaseMailSend(orderWithProductCartDTO);
 
+//        when
         mockMvc.perform(post("/api/v1/purchase/mail/send")
                         .contentType("application/json")
                         .content(new ObjectMapper().writeValueAsString(orderWithProductCartDTO)))
                 .andExpect(status().isOk());
 
+//        then
         verify(service, times(1)).purchaseMailSend(orderWithProductCartDTO);
     }
 }

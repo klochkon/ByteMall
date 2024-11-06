@@ -58,12 +58,14 @@ class CommentServiceTest {
 
     @Test
     void findAllByProductId() {
+//        given
         List<Comment> comments = Arrays.asList(comment1, comment2);
-
         when(commentRepository.findAllByProductId(1L)).thenReturn(comments);
 
+//        when
         List<Comment> result = commentService.findAllByProductId(1L);
 
+//        then
         assertEquals(2, result.size());
         assertEquals(comment1, result.get(0));
         verify(commentRepository, times(1)).findAllByProductId(1L);
@@ -71,43 +73,53 @@ class CommentServiceTest {
 
     @Test
     void addComment() {
+//        given
         when(commentRepository.save(any(Comment.class))).thenReturn(comment1);
 
+//        when
         Comment result = commentService.addComment(comment1);
 
+//        then
         assertEquals(comment1, result);
         verify(commentRepository, times(1)).save(comment1);
     }
 
     @Test
     void updateComment() {
+//        given
         when(commentRepository.save(any(Comment.class))).thenReturn(comment1);
 
+//        when
         Comment result = commentService.updateComment(comment1);
 
+//        then
         assertEquals(comment1, result);
         verify(commentRepository, times(1)).save(comment1);
     }
 
     @Test
     void deleteCommentById() {
+//        given
         Long commentId = 1L;
-
         doNothing().when(commentRepository).deleteById(commentId);
 
+//        when
         commentService.deleteCommentById(commentId);
 
+//        then
         verify(commentRepository, times(1)).deleteById(commentId);
     }
 
     @Test
     void findAllByAuthorNickname() {
+//        given
         List<Comment> comments = Collections.singletonList(comment1);
-
         when(commentRepository.findAllByAuthorNickname("user1")).thenReturn(comments);
 
+//        when
         List<Comment> result = commentService.findAllByAuthorNickname("user1");
 
+//        then
         assertEquals(1, result.size());
         assertEquals(comment1, result.get(0));
         verify(commentRepository, times(1)).findAllByAuthorNickname("user1");

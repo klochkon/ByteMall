@@ -76,8 +76,10 @@ class CustomerControllerTest {
 
     @Test
     void testSaveCustomer() throws Exception {
+//        given
         when(customerService.saveCustomer(any(Customer.class))).thenReturn(customer);
 
+//        when
         mockMvc.perform(post("/api/v1/customer/save")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(customer)))
@@ -91,13 +93,16 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.gender").value("MALE"))
                 .andExpect(jsonPath("$.newsLetterSubscribe").value(true));
 
+//        then
         verify(customerService, times(1)).saveCustomer(any(Customer.class));
     }
 
     @Test
     void testUpdateCustomer() throws Exception {
+//        given
         when(customerService.updateCustomer(any(Customer.class))).thenReturn(customer);
 
+//        when
         mockMvc.perform(put("/api/v1/customer/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(customer)))
@@ -111,46 +116,58 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.gender").value("MALE"))
                 .andExpect(jsonPath("$.newsLetterSubscribe").value(true));
 
+//        then
         verify(customerService, times(1)).updateCustomer(any(Customer.class));
     }
 
     @Test
     void testDeleteCustomer() throws Exception {
+//        given
         doNothing().when(customerService).deleteCustomerById(anyString());
 
+//        when
         mockMvc.perform(delete("/api/v1/customer/delete/1"))
                 .andExpect(status().isOk());
 
+//        then
         verify(customerService, times(1)).deleteCustomerById("1");
     }
 
     @Test
     void testFindCustomerById() throws Exception {
+//        given
         when(customerService.findCustomerById(anyString())).thenReturn(customerWithCartDTO);
 
+//        when
         mockMvc.perform(get("/api/v1/customer/find/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(customerWithCartDTO)));
 
+//        then
         verify(customerService, times(1)).findCustomerById("1");
     }
 
     @Test
     void testFindCustomerEmailAndNameById() throws Exception {
+//        given
         when(customerService.findCustomerEmailAndNameById(anyString())).thenReturn(customerDTO);
 
+//        when
         mockMvc.perform(get("/api/v1/customer/find/customerDTO/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(customerDTO)));
 
+//        then
         verify(customerService, times(1)).findCustomerEmailAndNameById("1");
     }
 
     @Test
     void testFindAllCustomer() throws Exception {
+//        given
         List<Customer> customers = List.of(customer);
         when(customerService.findAllCustomer()).thenReturn(customers);
 
+//        when
         mockMvc.perform(get("/api/v1/customer/find/all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
@@ -163,28 +180,36 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$[0].gender").value("MALE"))
                 .andExpect(jsonPath("$[0].newsLetterSubscribe").value(true));
 
+//        then
         verify(customerService, times(1)).findAllCustomer();
     }
 
     @Test
     void testCleanCart() throws Exception {
+//        given
         doNothing().when(customerService).cleanCart(anyString());
 
+//        when
         mockMvc.perform(put("/api/v1/customer/clean/cart/1"))
                 .andExpect(status().isOk());
 
+//        then
         verify(customerService, times(1)).cleanCart("1");
     }
 
     @Test
     void testCustomerIdentify() throws Exception {
+//        given
+        doNothing().when(customerService).customerIdentify(any());
         Map<String, String> productsWasOutMap = Map.of("key", "value");
 
+//        when
         mockMvc.perform(put("/api/v1/customer/identify/email")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(productsWasOutMap)))
                 .andExpect(status().isOk());
 
+//        then
         verify(customerService, times(1)).customerIdentify(any(Map.class));
     }
 }

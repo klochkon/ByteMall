@@ -70,18 +70,21 @@ class StorageServiceTest {
 
     @Test
     void raiseProductQuantityById() {
+//        given
         int quantityAdded = 5;
         doNothing().when(customerClient).customerIdentify(any());
         doNothing().when(repository).raiseProductQuantityById(anyLong(), anyInt());
         Map<Long, String> outMapWithId = new HashMap<>();
         outMapWithId.put(1L, "123");
         service.setOutMapWithId(outMapWithId);
-        service.raiseProductQuantityById(productDuplicateDTO, quantityAdded);
-
-        verify(repository).raiseProductQuantityById(productDuplicateDTO.getId(), quantityAdded);
-
         Map<String, String> expectedProductWasOutMap = new HashMap<>();
         expectedProductWasOutMap.put("123", "Test Product");
+
+//        when
+        service.raiseProductQuantityById(productDuplicateDTO, quantityAdded);
+
+//        then
+        verify(repository).raiseProductQuantityById(productDuplicateDTO.getId(), quantityAdded);
         verify(customerClient).customerIdentify(expectedProductWasOutMap);
         verifyNoMoreInteractions(repository, customerClient);
 
@@ -89,6 +92,7 @@ class StorageServiceTest {
 
     @Test
     void saveProduct() {
+        doNothing().when(repository).save(anyInt(), any());
         service.saveProduct(100, productDuplicateDTO);
 
         verify(repository, times(1)).save(any(Storage.class));
