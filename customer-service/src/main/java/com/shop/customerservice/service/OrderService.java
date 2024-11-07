@@ -62,8 +62,10 @@ public class OrderService {
                 .customerId(orderDuplicateDTO.getCustomerId())
                 .cost(orderDuplicateDTO.getCost())
                 .build();
+
+        Order returnedOrder = repository.save(order);
         log.info("Order updated successfully: {}", order);
-        return order;
+        return returnedOrder;
     }
 
     @CacheEvict(value = {"order", "allOrders"}, key = "#id")

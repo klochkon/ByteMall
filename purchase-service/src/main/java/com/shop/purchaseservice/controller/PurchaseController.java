@@ -19,7 +19,7 @@ public class PurchaseController {
 
     private final PurchaseService service;
 
-    @PostMapping(value = "operation", consumes = "application/json;charset=UTF-8")
+    @PostMapping(value = "operation", consumes = MediaType.APPLICATION_JSON_VALUE)
     public InventoryStatusDTO purchase(@RequestBody OrderWithProductCartDTO orderDuplicateDTO) {
         return service.purchase(orderDuplicateDTO);
     }

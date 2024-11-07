@@ -61,7 +61,7 @@ class OrderServiceTest {
                 .id(new ObjectId(orderWithProductCartDTO.getId()))
                 .customerId(orderWithProductCartDTO.getCustomerId())
                 .cost(orderWithProductCartDTO.getCost())
-                .cart(Map.of(1L, 2))
+                .cart(Map.of(1L, 1))
                 .build();
     }
 
@@ -88,7 +88,7 @@ class OrderServiceTest {
         Order updatedOrder = orderService.updateOrder(orderWithProductCartDTO);
 
 //        then
-        verify(repository).save(order);
+        verify(repository, times(1)).save(order);
         assertEquals(order.getCustomerId(), updatedOrder.getCustomerId());
         assertEquals(orderWithProductCartDTO.getCost(), updatedOrder.getCost());
     }

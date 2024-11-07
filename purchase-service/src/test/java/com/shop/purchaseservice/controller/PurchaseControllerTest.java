@@ -53,7 +53,7 @@ class PurchaseControllerTest {
 
 //        when
         mockMvc.perform(post("/api/v1/purchase/operation")
-                        .contentType("application/json;charset=UTF-8")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(orderWithProductCartDTO)))
                 .andExpect(status().isOk());
 
